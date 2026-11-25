@@ -1,0 +1,3 @@
+{ "titulo": "Añade la tabla de ventajas entre tipos", "autor": "agente-desatendido", "ficheros": ["src/ui/tablaTiposView.mjs", "src/core/tiposService.mjs", "test/tipos.test.mjs"],
+  "lineasCambiadas": 420, "testsModificadosOBorrados": 0, "relajaUmbrales": false, "anadeExcepciones": false, "cambioLaEspecificacion": true,
+  "notaDeRiesgo": 3, "garantias": {"tests":"verde","fronteras":"verde","cobertura":"verde","mutacion":"verde"} }

@@ -1,0 +1,16 @@
+{
+  "name": "demo-red-de-garantias",
+  "private": true,
+  "type": "module",
+  "description": "Mini proyecto sin dependencias para tocar con las manos: garantías, ratchet, hooks, mutación de la spec y carriles.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "fronteras": "node tools/fronteras.mjs",
+    "ratchet": "node tools/ratchet.mjs",
+    "spec:mutacion": "node tools/mutacionSpec.mjs",
+    "carril": "node tools/carril.mjs",
+    "check": "npm run ratchet && npm test",
+    "verify": "npm run check && npm run spec:mutacion"
+  }
+}

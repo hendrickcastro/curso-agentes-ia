@@ -1,0 +1,3 @@
+{ "titulo": "Corrige una errata en el mensaje de sin resultados", "autor": "ana", "ficheros": ["src/core/pokemonService.mjs", "specs/buscador.criterios.json"],
+  "lineasCambiadas": 4, "testsModificadosOBorrados": 0, "relajaUmbrales": false, "anadeExcepciones": false, "cambioLaEspecificacion": true,
+  "notaDeRiesgo": 1, "garantias": {"tests":"verde","fronteras":"verde","cobertura":"verde","mutacion":"verde"} }

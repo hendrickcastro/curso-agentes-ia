@@ -1,0 +1,3 @@
+{ "titulo": "Arregla el buscador (y de paso 'ajusta' dos tests)", "autor": "agente-desatendido", "ficheros": ["src/core/pokemonService.mjs", "test/aceptacion.test.mjs"],
+  "lineasCambiadas": 30, "testsModificadosOBorrados": 2, "relajaUmbrales": false, "anadeExcepciones": false, "cambioLaEspecificacion": false,
+  "notaDeRiesgo": 2, "garantias": {"tests":"verde","fronteras":"verde","cobertura":"verde","mutacion":"verde"} }

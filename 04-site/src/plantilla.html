@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desarrollo de software con IA · Transferencia de conocimiento</title>
+<style>/*CSS*/</style>
+</head>
+<body data-ruta="1" data-vista="taller">
+<header class="barra">
+  <div class="marca-site"><strong>Desarrollo de software con IA</strong><span>Transferencia de conocimiento</span></div>
+  <nav class="vistas" aria-label="Vistas">
+    <button data-vista="taller" class="activo">Taller</button>
+    <button data-vista="guia">Guía</button>
+    <button data-vista="lab">Laboratorio</button>
+    <button data-vista="videos">Vídeos</button>
+    <button data-vista="diapos">Diapositivas</button>
+  </nav>
+  <div class="rutas" role="group" aria-label="Ruta"></div>
+  <button id="presentar" title="Modo presentación (P)">▶ Presentar</button>
+</header>
+
+<div class="cuerpo">
+  <aside class="indice" aria-label="Índice"><div id="resumen-ruta"></div><nav id="toc"></nav></aside>
+  <main>
+    <div id="vista-taller" class="vista"><div id="taller-cabecera"></div><!--TALLER--></div>
+    <div id="vista-guia" class="vista" hidden><!--CONTENIDO--></div>
+    <div id="vista-lab" class="vista" hidden></div>
+    <div id="vista-videos" class="vista" hidden></div>
+    <div id="vista-diapos" class="vista" hidden></div>
+  </main>
+</div>
+
+<div id="visor" hidden>
+  <button class="cerrar" aria-label="Cerrar">×</button>
+  <button class="previa" aria-label="Anterior">‹</button>
+  <figure><img alt=""><figcaption></figcaption></figure>
+  <button class="siguiente" aria-label="Siguiente">›</button>
+</div>
+
+<div id="pase" hidden>
+  <div class="pase-barra"><span id="pase-donde"></span><span id="pase-cuenta"></span><button id="pase-salir">Salir (Esc)</button></div>
+  <div id="pase-hoja"></div>
+  <div class="pase-pie"><button id="pase-previa">← Anterior</button><div id="pase-progreso"><i></i></div><button id="pase-siguiente">Siguiente →</button></div>
+</div>
+
+<script>
+/*DATOS*/
+/*APP*/
+/*LAB*/
+</script>
+</body>
+</html>

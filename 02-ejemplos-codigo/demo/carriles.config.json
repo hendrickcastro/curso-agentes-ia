@@ -1,0 +1,8 @@
+{
+  "_nota": "Los umbrales los pone cada equipo: el apetito de riesgo es una decisión, no una constante.",
+  "zonasVetadas": ["src/pagos/", "migrations/", ".github/", ".claude/", "carriles.config.json", "ratchet.base.json"],
+  "autoresSinHistorial": ["agente-desatendido"],
+  "maxLineasCarrilVerde": 150,
+  "riesgo": { "muestreoDesde": 4, "lecturaDesde": 7 },
+  "garantiasQueDebenDetener": ["tests", "fronteras", "cobertura", "mutacion"]
+}

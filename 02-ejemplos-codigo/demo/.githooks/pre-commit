@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Antes de confirmar el cambio: segundos, y todavía no lo ha visto nadie más.
+set -e
+node tools/ratchet.mjs
+node --test test/*.test.mjs

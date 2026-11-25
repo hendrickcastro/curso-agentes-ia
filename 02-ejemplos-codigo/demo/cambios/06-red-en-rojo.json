@@ -1,0 +1,3 @@
+{ "titulo": "Añade paginación al buscador", "autor": "ana", "ficheros": ["src/core/pokemonService.mjs"],
+  "lineasCambiadas": 60, "testsModificadosOBorrados": 0, "relajaUmbrales": false, "anadeExcepciones": false, "cambioLaEspecificacion": true,
+  "notaDeRiesgo": 2, "garantias": { "tests": "rojo", "fronteras": "verde", "cobertura": "verde", "mutacion": "verde" } }

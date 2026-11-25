@@ -1,0 +1,17 @@
+{
+  "funcionalidad": "Buscador de Pokémon",
+  "intencion": "Encontrar un Pokémon por su nombre sin tener que escribirlo exacto.",
+  "restricciones": ["Las vistas no llaman a la API: los datos llegan por pokemonService."],
+  "criterios": [
+    { "id": "AC1", "texto": "Busca por nombre sin distinguir mayúsculas: «PIKA» encuentra a Pikachu.",
+      "dado": { "consulta": "PIKA" }, "entonces": { "resultados": ["Pikachu"] } },
+    { "id": "AC2", "texto": "Busca por cualquier parte del nombre: «chu» también encuentra a Pikachu.",
+      "dado": { "consulta": "chu" }, "entonces": { "resultados": ["Pikachu", "Raichu", "Machu"] } },
+    { "id": "AC3", "texto": "Con menos de dos letras no busca.",
+      "dado": { "consulta": "p" }, "entonces": { "haBuscado": false } },
+    { "id": "AC4", "texto": "Sin resultados, dice «Ningún Pokémon se llama así».",
+      "dado": { "consulta": "zzz" }, "entonces": { "mensaje": "Ningún Pokémon se llama así" } },
+    { "id": "AC5", "texto": "Responde en menos de 200 ms.",
+      "dado": { "consulta": "pika" }, "entonces": { "tiempoMaximoMs": 200 } }
+  ]
+}

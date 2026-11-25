@@ -1,0 +1,3 @@
+{ "titulo": "Renombra una variable", "autor": "ana", "ficheros": ["src/ui/buscadorView.mjs"],
+  "lineasCambiadas": 2, "testsModificadosOBorrados": 0, "relajaUmbrales": false, "anadeExcepciones": false, "cambioLaEspecificacion": false,
+  "notaDeRiesgo": 0, "garantias": { "tests": "verde", "fronteras": "verde", "cobertura": "avisa", "mutacion": "no-existe" } }

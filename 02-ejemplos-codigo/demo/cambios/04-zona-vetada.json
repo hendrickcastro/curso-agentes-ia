@@ -1,0 +1,3 @@
+{ "titulo": "Cambia el redondeo de los cobros", "autor": "luis", "ficheros": ["src/pagos/cobro.mjs"],
+  "lineasCambiadas": 6, "testsModificadosOBorrados": 0, "relajaUmbrales": false, "anadeExcepciones": false, "cambioLaEspecificacion": true,
+  "notaDeRiesgo": 1, "garantias": {"tests":"verde","fronteras":"verde","cobertura":"verde","mutacion":"verde"} }

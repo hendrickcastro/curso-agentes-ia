@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Antes de publicarlo: minutos, y es el último momento en que sigue siendo privado.
+set -e
+npm run verify
