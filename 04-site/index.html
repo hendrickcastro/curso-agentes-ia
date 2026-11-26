@@ -46,10 +46,11 @@ body:not([data-vista="guia"]) .cuerpo{grid-template-columns:minmax(0,1fr)}
 #toc a.mod{color:var(--tinta); font-weight:600; margin-top:10px}
 main{padding:26px clamp(16px,4vw,48px) 120px; min-width:0}
 .vista{max-width:900px}
-#vista-lab,#vista-diapos{max-width:none}
+#vista-lab,#vista-diapos,#vista-vivo{max-width:none}
 
 /* filtro de rutas */
 body[data-ruta="1"] [data-nivel="2"], body[data-ruta="1"] [data-nivel="3"], body[data-ruta="2"] [data-nivel="3"]{display:none}
+body[data-ruta="4"] [data-nivel]:not([data-agente]){display:none}
 
 .modulo{background:var(--papel); border:1px solid var(--linea); border-radius:14px; padding:26px clamp(16px,3vw,36px); margin-bottom:26px}
 .modulo .num{margin:0; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--suave)}
@@ -92,6 +93,31 @@ body.editando .rejilla button.quitado::after{content:"Restaurar"}
 #barra-edicion{position:fixed; left:0; right:0; bottom:0; z-index:30; display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:10px 18px; background:var(--aviso-suave); border-top:2px solid var(--aviso)}
 #barra-edicion span{margin-right:auto; font-weight:600}
 #pase .quitar{display:none}
+
+/* en vivo */
+.ejemplo-vivo{background:var(--papel); border:1px solid var(--linea); border-radius:14px; padding:22px clamp(16px,3vw,32px); margin-bottom:26px}
+.ejemplo-vivo .num{margin:0; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--suave)}
+.ejemplo-vivo h2{border:0; padding:0; margin:.1em 0 .4em}
+.ejemplo-vivo>figure pre{white-space:pre-wrap; overflow-wrap:anywhere}
+.dos-columnas{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:16px}
+.col-vivo{border:1px solid var(--linea); border-radius:12px; padding:14px; min-width:0; background:var(--fondo)}
+.col-cabecera{display:flex; justify-content:space-between; align-items:center; gap:8px}
+.col-cabecera h3{margin:0}
+.rodea{margin:.4em 0 .8em; font-size:14px; color:var(--suave)}
+.registro{max-height:420px; overflow:auto; border:1px solid var(--linea); border-radius:8px; background:var(--papel); padding:8px 10px; font-size:13px}
+.ev{padding:3px 0; overflow-wrap:anywhere}
+.ev.texto{white-space:pre-wrap; padding:6px 0}
+.ev.herr code{font-size:12px}
+.ev.res summary,.ev.error summary,.ev.hook,.ev.inicio{color:var(--suave)}
+.ev.error summary,.ev.aviso{color:var(--rojo)}
+.ev.paro{background:var(--rojo-suave); color:var(--rojo); border-radius:6px; padding:6px 8px; margin:4px 0; font-weight:600}
+.ev pre,.resultado-vivo pre{white-space:pre-wrap; overflow-wrap:anywhere; background:var(--codigo); border-radius:6px; padding:8px 10px; margin:4px 0; font-size:12px; font-weight:400; color:var(--tinta); max-height:320px; overflow:auto}
+.resultado-vivo h4{margin:14px 0 4px; font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--suave)}
+.resultado-vivo pre.respuesta,.resultado-vivo pre.fichero{font-size:13px; border:1px solid var(--linea)}
+.comprobacion summary{cursor:pointer; padding:3px 0}
+.sin-claude{border-color:var(--rojo)}
+button:disabled{opacity:.6; cursor:progress}
+@media (max-width:900px){.dos-columnas{grid-template-columns:1fr}}
 
 /* taller */
 .ejercicio{background:var(--papel); border:1px solid var(--linea); border-radius:14px; padding:22px clamp(16px,3vw,32px); margin-bottom:22px}
@@ -184,6 +210,7 @@ svg text{fill:var(--suave); font-size:11px}
   <div class="marca-site"><strong>Desarrollo de software con IA</strong><span>Transferencia de conocimiento</span></div>
   <nav class="vistas" aria-label="Vistas">
     <button data-vista="taller" class="activo">Taller</button>
+    <button data-vista="vivo">En vivo</button>
     <button data-vista="guia">Guía</button>
     <button data-vista="lab">Laboratorio</button>
     <button data-vista="videos">Vídeos</button>
@@ -228,7 +255,7 @@ npm run check</code></pre></figure>
 <div class="parte idea"><h3>La idea</h3><p>Para saber si está bien, lo tienes que leer entero. Has pedido, no has delegado.</p></div>
 <footer><button class="ir-lab" data-lab="cuaderno">Abrir en el laboratorio: Cuaderno de prácticas</button><button class="ir-guia" data-guia="m00">La explicación, en la guía</button><label class="hecho"><input type="checkbox" data-hecho="t1"> Hecho</label></footer>
 </article>
-<article class="ejercicio" data-nivel="1" id="t2" data-min="8">
+<article class="ejercicio" data-nivel="1" data-agente id="t2" data-min="8">
 <header><p class="num">Ejercicio <span class="n-ej">3</span> · 8 min · Tu agente</p><h2>Lo que no está escrito no existe<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="t2"></button></header>
 <div class="parte haz"><h3>Haz</h3><ol><li>Sigue en la rama <code>sin-red</code>. En una <strong>sesión nueva</strong>, pregunta:</li></ol>
 <figure class="codigo"><figcaption>text<button class="copiar">Copiar</button></figcaption><pre><code>Sin escribir código: ¿en qué orden deben salir los resultados del buscador y quién decide el mensaje de «sin resultados»? Dime de qué fichero lo sacas.</code></pre></figure>
@@ -238,7 +265,7 @@ npm run check</code></pre></figure>
 <div class="parte idea"><h3>La idea</h3><p>El agente solo sabe lo que cabe en su ventana, y un <code>AGENTS.md</code> corto que apunta al sitio vale más que uno largo. <strong>Sin agente:</strong> en el laboratorio, Ventana de contexto, sube los MCP de 0 a 8 y busca en qué turno cruzas el 60 %.</p></div>
 <footer><button class="ir-lab" data-lab="contexto">Abrir en el laboratorio: Ventana de contexto</button><button class="ir-guia" data-guia="m02">La explicación, en la guía</button><label class="hecho"><input type="checkbox" data-hecho="t2"> Hecho</label></footer>
 </article>
-<article class="ejercicio" data-nivel="1" id="t3" data-min="12">
+<article class="ejercicio" data-nivel="1" data-agente id="t3" data-min="12">
 <header><p class="num">Ejercicio <span class="n-ej">4</span> · 12 min · Tu agente</p><h2>Para en el plan<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="t3"></button></header>
 <div class="parte haz"><h3>Haz</h3><ol><li>Rama nueva desde <code>main</code>:</li></ol>
 <figure class="codigo"><figcaption>bash<button class="copiar">Copiar</button></figcaption><pre><code>git switch -f main &amp;&amp; git switch -c rpi</code></pre></figure>
@@ -275,7 +302,7 @@ Paso 4   src/ui/legacy/viejaVista.mjs: tenía 1, ahora 2                  códig
 <div class="parte idea"><h3>La idea</h3><p>Si avisa pero no detiene, es un informe. Y un repositorio viejo no tiene que cumplir: solo no empeorar. Lo viejo pasa, lo nuevo detiene, la línea solo baja.</p></div>
 <footer><button class="ir-lab" data-lab="ratchet">Abrir en el laboratorio: Ratchet</button><button class="ir-guia" data-guia="m04-el-ratchet">La explicación, en la guía</button><label class="hecho"><input type="checkbox" data-hecho="t4"> Hecho</label></footer>
 </article>
-<article class="ejercicio" data-nivel="1" id="t5" data-min="8">
+<article class="ejercicio" data-nivel="1" data-agente id="t5" data-min="8">
 <header><p class="num">Ejercicio <span class="n-ej">6</span> · 8 min · Terminal (mejor con Claude Code)</p><h2>El hook para al agente<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="t5"></button></header>
 <div class="parte haz"><h3>Haz</h3><ol><li>Mira lo que el hook le dice al agente cuando rompe la frontera:</li></ol>
 <figure class="codigo"><figcaption>bash<button class="copiar">Copiar</button></figcaption><pre><code>echo "fetch('x')" &gt;&gt; src/ui/buscadorView.mjs
@@ -291,7 +318,7 @@ código: 2</code></pre></figure>
 <div class="parte idea"><h3>La idea</h3><p>El código 2 y el motivo por stderr son lo que hace que el aviso lo lea el agente y no tú. Una regla escrita se cumple casi siempre; un hook, siempre.</p></div>
 <footer><button class="ir-lab" data-lab="cuaderno">Abrir en el laboratorio: Cuaderno de prácticas</button><button class="ir-guia" data-guia="m05-el-hook-de-punta-a-punta">La explicación, en la guía</button><label class="hecho"><input type="checkbox" data-hecho="t5"> Hecho</label></footer>
 </article>
-<article class="ejercicio" data-nivel="1" id="t6" data-min="6">
+<article class="ejercicio" data-nivel="1" data-agente id="t6" data-min="6">
 <header><p class="num">Ejercicio <span class="n-ej">7</span> · 6 min · Terminal</p><h2>Una skill por dentro<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="t6"></button></header>
 <div class="parte haz"><h3>Haz</h3><ol><li>Mira las tres piezas: instrucciones, script y referencia.</li></ol>
 <figure class="codigo"><figcaption>bash<button class="copiar">Copiar</button></figcaption><pre><code>find .claude/skills/revisar-pr -type f
@@ -492,11 +519,11 @@ desventajas entre todos los tipos de Pokémon.</code></pre></figure>
 
 </section>
 </article>
-<article class="modulo" data-nivel="1" id="m02" data-numero="02">
+<article class="modulo" data-nivel="1" data-agente id="m02" data-numero="02">
 <header><p class="num">Módulo <span class="n-mod">02</span></p><h1>Contexto<span class="marca n1">Resumida</span></h1><button class="quitar" data-clave="m02"></button></header>
 <blockquote class="frase"><p><strong>En una frase.</strong> El contexto es un presupuesto de atención, no un almacén: no se escribe, se acumula, y la disciplina consiste en decidir qué acumulas. <button class="dia" data-d="1" data-n="27" title="Ver la diapositiva">D1·27</button> <button class="dia" data-d="1" data-n="49" title="Ver la diapositiva">D1·49</button></p></blockquote>
 <details class="video" data-video="02"><summary>Vídeo explicativo del módulo</summary><video controls preload="none" src="../03-videos/02-contexto.mp4"></video></details>
-<section class="seccion" data-nivel="1" id="m02-que-es-el-contexto">
+<section class="seccion" data-nivel="1" data-agente id="m02-que-es-el-contexto">
 <h2>Qué es el contexto<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m02-que-es-el-contexto"></button>
 <p><strong>El contexto es todo el estado disponible para el modelo en el momento de la inferencia.</strong> No es tu mensaje: tu mensaje es una fracción pequeña, y a menudo la más pequeña de todas.</p>
 <p><strong>No es prompt engineering, y la diferencia es temporal.</strong> El prompt es algo que escribes una vez y reutilizas: una frase. El contexto se decide cada vez que se llama al modelo; en una sesión de agente eso son decenas o cientos de veces, y tú solo escribiste la primera.</p>
@@ -504,47 +531,47 @@ desventajas entre todos los tipos de Pokémon.</code></pre></figure>
 <blockquote class="analogia"><p><strong>Analogía.</strong> El contexto es la mesa de trabajo, no el archivo. En una mesa cabe poco, y cada papel que dejas encima tapa a los demás. Un compañero con la mesa llena de papeles de otros asuntos no trabaja peor por tonto, sino porque no encuentra el que importa.</p></blockquote>
 
 </section>
-<section class="seccion" data-nivel="2" id="m02-anatomia-de-la-ventana">
+<section class="seccion" data-nivel="2" data-agente id="m02-anatomia-de-la-ventana">
 <h2>Anatomía de la ventana<span class="marca n2">Media</span></h2><button class="quitar" data-clave="m02-anatomia-de-la-ventana"></button>
 <p>Cinco partidas con comportamientos distintos. Lo que importa es la tercera columna.</p>
 <div class="tabla"><table><thead><tr><th>Componente</th><th>Qué es</th><th>Comportamiento</th></tr></thead><tbody><tr><td>System prompt</td><td>Instrucciones permanentes del agente</td><td>Fijo, presente en todas las llamadas</td></tr><tr><td>Definiciones de herramientas</td><td>Qué puede hacer el agente y cómo</td><td>Fijo, y mucho más grande de lo que nadie estima</td></tr><tr><td>Documentos recuperados</td><td>Ficheros leídos, búsquedas, documentación</td><td>Crece por acumulación, rara vez se limpia</td></tr><tr><td>Historial de mensajes</td><td>Toda la conversación previa</td><td>Crece dos veces por cada acción</td></tr><tr><td>Salidas de herramientas</td><td>Resultados de cada ejecución</td><td>Suele ser lo que más ocupa</td></tr></tbody></table></div>
 <p><strong>La mayor parte de tu ventana no la escribiste tú. Se acumuló sola.</strong> La ventana del turno treinta es un artefacto que nadie diseñó: en el turno 1 es system prompt, herramientas y tu mensaje; en el 30, casi todo son salidas de herramientas y respuestas del agente, y ha cruzado el 60 %. (Redibujado de HumanLayer, <em>Context forking to save time, trouble and tokens</em>.)</p>
 
 </section>
-<section class="seccion" data-nivel="1" id="m02-ventana-nominal-y-capacidad-efectiva">
+<section class="seccion" data-nivel="1" data-agente id="m02-ventana-nominal-y-capacidad-efectiva">
 <h2>Ventana nominal y capacidad efectiva<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m02-ventana-nominal-y-capacidad-efectiva"></button>
 <ul><li><strong>Ventana nominal.</strong> El número que anuncia el proveedor: 200K, 1M. Es un límite duro, y superarlo es un error, no una degradación.</li><li><strong>Capacidad efectiva.</strong> Materialmente menor que la nominal, y depende de la tarea. <em>Context Rot</em> (Chroma, 2025): el rendimiento cae al crecer el input incluso en tareas triviales, en los 18 modelos medidos.</li></ul>
 <p><strong>La curva en U</strong> (<em>Lost in the Middle</em>, Liu et al., 2023): el modelo recuerda bien el principio y el final, y pierde de 20 a 30 puntos de <em>recall</em> cuando el documento relevante cae en el centro.</p>
 <p><strong>Nunca pongas una restricción crítica en medio de un prompt largo.</strong> El fallo parecerá desobediencia cuando es geometría.</p>
 
 </section>
-<section class="seccion" data-nivel="1" id="m02-las-cuatro-formas-de-fallar">
+<section class="seccion" data-nivel="1" data-agente id="m02-las-cuatro-formas-de-fallar">
 <h2>Las cuatro formas de fallar<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m02-las-cuatro-formas-de-fallar"></button>
 <p>Qué le pasa a la ventana y cómo lo ves desde fuera. Convierte «el agente se está portando raro» en un diagnóstico con nombre.</p>
 <div class="tabla"><table><thead><tr><th>Fallo</th><th>Qué pasa</th><th>Cómo se ve</th></tr></thead><tbody><tr><td><strong>Poisoning</strong></td><td>Un error entra en la ventana y se sigue usando como si fuera verdad.</td><td>Se inventa <code>usePokemonTypes()</code>. Se lo corriges, pero cada fichero nuevo lo vuelve a importar: el nombre falso sigue ahí, repetido, y pesa más que tu corrección.</td></tr><tr><td><strong>Distraction</strong></td><td>La ventana crece tanto que el modelo copia del historial en vez de pensar.</td><td>Tras dos horas con el mismo bug, repite pasos que ya probasteis y no funcionaron.</td></tr><tr><td><strong>Confusion</strong></td><td>Hay información que sobra, y el modelo la usa porque está ahí.</td><td>Tienes cargado el MCP de la base de datos y le pides cambiar un texto de la interfaz. Acaba lanzando una consulta que nadie le pidió.</td></tr><tr><td><strong>Clash</strong></td><td>Dos partes de la ventana se contradicen y el modelo elige la que no es.</td><td>Arregláis juntos el daño contra Pokémon de dos tipos. Una hora después lo reescribe como estaba: la versión vieja sigue más arriba en el hilo, y la toma por buena.</td></tr></tbody></table></div>
 
 </section>
-<section class="seccion" data-nivel="2" id="m02-el-primer-prompt-es-una-decision-de-arquitectura">
+<section class="seccion" data-nivel="2" data-agente id="m02-el-primer-prompt-es-una-decision-de-arquitectura">
 <h2>El primer prompt es una decisión de arquitectura<span class="marca n2">Media</span></h2><button class="quitar" data-clave="m02-el-primer-prompt-es-una-decision-de-arquitectura"></button>
 <p>La interpretación que el modelo hace de tu primer prompt fija una trayectoria de la que ya no se sale: todo lo que viene después se construye encima, incluidos los errores.</p>
 
 </section>
-<section class="seccion" data-nivel="1" id="m02-como-medir-el-contexto">
+<section class="seccion" data-nivel="1" data-agente id="m02-como-medir-el-contexto">
 <h2>Cómo medir el contexto<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m02-como-medir-el-contexto"></button>
 <p>Tres niveles: <strong>ocupación</strong> (¿cuánto llevo gastado?), <strong>composición</strong> (¿en qué me lo he gastado?) y <strong>degradación</strong> (¿se está estropeando?).</p>
-<section class="sub" data-nivel="1" id="m02-como-medir-el-contexto-nivel-1-ocupacion">
+<section class="sub" data-nivel="1" data-agente id="m02-como-medir-el-contexto-nivel-1-ocupacion">
 <h3>Nivel 1 · Ocupación<span class="marca n1">Resumida</span></h3><button class="quitar" data-clave="m02-como-medir-el-contexto-nivel-1-ocupacion"></button>
 <div class="tabla"><table><thead><tr><th>Herramienta</th><th>Cómo verlo</th></tr></thead><tbody><tr><td>Claude Code</td><td><code>/context</code>: desglose por componente, más el porcentaje en la barra</td></tr><tr><td>Codex</td><td><code>/status</code>: porcentaje libre y tokens usados. <code>/statusline</code> lo fija en el pie. Sin desglose</td></tr><tr><td>Cursor</td><td>Anillo junto al prompt. Al pulsarlo, desglose por categoría: tools, rules, skills, MCP, conversación</td></tr><tr><td>Copilot (VS Code)</td><td>Anillo en la entrada del chat. Al pasar el ratón, tokens usados sobre el máximo y desglose</td></tr></tbody></table></div>
 <p><strong>La regla: al 60 % de la ventana compactas o abres sesión nueva.</strong> Si la ventana es de un millón, antes de unos 150.000 tokens. No esperas al límite: al llegar al 100 % la herramienta compacta de urgencia y decide ella qué tira.</p>
 
 </section>
-<section class="sub" data-nivel="2" id="m02-como-medir-el-contexto-nivel-2-composicion">
+<section class="sub" data-nivel="2" data-agente id="m02-como-medir-el-contexto-nivel-2-composicion">
 <h3>Nivel 2 · Composición<span class="marca n2">Media</span></h3><button class="quitar" data-clave="m02-como-medir-el-contexto-nivel-2-composicion"></button>
 <p><strong>Mismo mensaje, mismo trabajo:</strong> con cuatro MCP cargados (GitHub, Linear, base de datos, navegador), la tarea empieza al otro lado del umbral del 60 % antes de que escribas nada, porque sus definiciones ocupan sitio en todas las llamadas. (Redibujado de HumanLayer, <em>Skill issue: harness engineering for coding agents</em>.)</p>
 <p>En la demo en vivo, un <code>/context</code> real de una sesión larga: 175k de 1M tokens (18 %), de los que 142,7k son <strong>mensajes</strong>; system prompt 2,2k, herramientas del sistema 14,9k, agentes propios 4,2k, ficheros de memoria 1,9k, skills 9,9k, y 157 herramientas MCP con 0 tokens porque se cargan bajo demanda. Antes de mirar los números, la pregunta es: ¿en qué creéis que se va?</p>
 
 </section>
-<section class="sub" data-nivel="1" id="m02-como-medir-el-contexto-nivel-3-degradacion">
+<section class="sub" data-nivel="1" data-agente id="m02-como-medir-el-contexto-nivel-3-degradacion">
 <h3>Nivel 3 · Degradación<span class="marca n1">Resumida</span></h3><button class="quitar" data-clave="m02-como-medir-el-contexto-nivel-3-degradacion"></button>
 <p>No hay contador. Se detecta por síntomas.</p>
 <div class="tabla"><table><thead><tr><th>Lo que ves</th><th>Qué es</th><th>Qué haces</th></tr></thead><tbody><tr><td>Insiste en una función o fichero que no existe</td><td>Poisoning</td><td>No lo corrijas en el hilo: el error ya está referenciado. Rebobina a antes de que entrara; si no sabes cuándo entró, sesión nueva</td></tr><tr><td>Empeora según avanza, se vuelve genérico</td><td>Distraction</td><td>Compactar</td></tr><tr><td>Te reintroduce un bug que ya arreglasteis</td><td>Clash</td><td>Sesión nueva, y la corrección en la spec, no en el chat</td></tr><tr><td>Ignora una restricción que diste al principio</td><td>Posición</td><td>Reponerla al final del prompt actual</td></tr></tbody></table></div>
@@ -552,15 +579,15 @@ desventajas entre todos los tipos de Pokémon.</code></pre></figure>
 
 </section>
 </section>
-<section class="seccion" data-nivel="1" id="m02-los-cuatro-principios">
+<section class="seccion" data-nivel="1" data-agente id="m02-los-cuatro-principios">
 <h2>Los cuatro principios<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m02-los-cuatro-principios"></button>
 <div class="tabla"><table><thead><tr><th>Pregunta</th><th>Principio</th><th>En qué consiste</th></tr></thead><tbody><tr><td>Qué entra</td><td><strong>Solo lo que cambia la respuesta</strong></td><td>Si lo quitas y el agente haría lo mismo, sobra. Lo demás, que lo busque cuando lo necesite.</td></tr><tr><td>Dónde va</td><td><strong>Colocación consciente de la posición</strong></td><td>Restricciones críticas, formato de salida y guardarraíles van al principio o al final. Nunca enterrados en medio.</td></tr><tr><td>Con cuánto detalle</td><td><strong>Divulgación progresiva</strong></td><td>Nombres y descripciones al arrancar; contenido completo solo cuando algo se activa. Y si se activa, cárgalo entero.</td></tr><tr><td>Cada turno</td><td><strong>Curación iterativa</strong></td><td>No escribas el CLAUDE.md pensando en todo lo que podría salir mal. Empieza con lo mínimo y añade una regla cada vez que veas fallar al agente.</td></tr></tbody></table></div>
-<section class="sub" data-nivel="2" id="m02-los-cuatro-principios-principio-1-reducir-lo-que-entra">
+<section class="sub" data-nivel="2" data-agente id="m02-los-cuatro-principios-principio-1-reducir-lo-que-entra">
 <h3>Principio 1 · Reducir lo que entra<span class="marca n2">Media</span></h3><button class="quitar" data-clave="m02-los-cuatro-principios-principio-1-reducir-lo-que-entra"></button>
 <ul><li><strong>Pide el trozo, no el fichero.</strong> La función que vas a tocar, no el fichero entero. El fichero, no el repositorio.</li><li><strong>Menos herramientas.</strong> Cada una ocupa sitio en todos los mensajes. Y con muchas, el agente duda cuál usar.</li><li><strong>Nombres que se explican.</strong> <code>tarifas_clientes.json</code> se encuentra sin abrirlo. <code>data/file1.json</code> hay que abrirlo para saber qué es.</li></ul>
 
 </section>
-<section class="sub" data-nivel="2" id="m02-los-cuatro-principios-principio-2-colocar-bien-lo-que-entra">
+<section class="sub" data-nivel="2" data-agente id="m02-los-cuatro-principios-principio-2-colocar-bien-lo-que-entra">
 <h3>Principio 2 · Colocar bien lo que entra<span class="marca n2">Media</span></h3><button class="quitar" data-clave="m02-los-cuatro-principios-principio-2-colocar-bien-lo-que-entra"></button>
 <ul><li><strong>Lo que pides, al final.</strong> Pega arriba el log o el fichero. Debajo, la petición y lo que no se puede saltar.</li><li><strong>CLAUDE.md corto y por secciones.</strong> Encabezados y viñetas. Si ignora una regla que está escrita, sobra texto alrededor.</li><li><strong>Cada regla con su porqué.</strong> «Sin <code>any</code>: rompe el tipado de la API» guía mejor que «NUNCA uses <code>any</code>».</li></ul>
 <figure class="codigo"><figcaption>text<button class="copiar">Copiar</button></figcaption><pre><code>&lt;log de 200 líneas pegado ARRIBA&gt;
@@ -580,7 +607,7 @@ Restricción que no se puede saltar: las vistas no llaman a la API.</code></pre>
 - Antes de dar una tarea por terminada, `npm run check` tiene que pasar.</code></pre></figure>
 
 </section>
-<section class="sub" data-nivel="2" id="m02-los-cuatro-principios-principio-3-diferir-la-carga">
+<section class="sub" data-nivel="2" data-agente id="m02-los-cuatro-principios-principio-3-diferir-la-carga">
 <h3>Principio 3 · Diferir la carga<span class="marca n2">Media</span></h3><button class="quitar" data-clave="m02-los-cuatro-principios-principio-3-diferir-la-carga"></button>
 <ul><li><strong>Notas estructuradas.</strong> El agente escribe fuera de la ventana y relee cuando lo necesita.</li><li><strong>Subagentes.</strong> Ventana limpia que devuelve 1.000 a 2.000 tokens destilados en vez de toda la exploración.</li><li><strong>Ficheros como memoria.</strong> El sistema de ficheros es contexto que no paga tokens hasta que se lee.</li></ul>
 <p><strong>Los subagentes no son gratis:</strong> un sistema multiagente consume casi cuatro veces los tokens de un hilo único. Compran aislamiento, no ahorro.</p>
@@ -599,7 +626,7 @@ Eres un cortafuegos de contexto. Devuelve SOLO esto, sin explicar cómo lo has e
 Como máximo diez líneas, ordenadas de más a menos relevante.</code></pre></figure>
 
 </section>
-<section class="sub" data-nivel="1" id="m02-los-cuatro-principios-principio-4-podar-lo-acumulado">
+<section class="sub" data-nivel="1" data-agente id="m02-los-cuatro-principios-principio-4-podar-lo-acumulado">
 <h3>Principio 4 · Podar lo acumulado<span class="marca n1">Resumida</span></h3><button class="quitar" data-clave="m02-los-cuatro-principios-principio-4-podar-lo-acumulado"></button>
 <p>De lo que menos tira a lo que más:</p>
 <div class="tabla"><table><thead><tr><th>Técnica</th><th>Qué hace</th><th>Cuándo</th></tr></thead><tbody><tr><td><strong>Observation masking</strong></td><td>Sustituye salidas de herramientas ya procesadas por un resumen o una referencia.</td><td>La opción de menor riesgo para empezar.</td></tr><tr><td><strong>Compactación</strong></td><td>Resume la conversación y sigue en una ventana limpia.</td><td>El arte está en qué se descarta: hazlo tú antes de que lo haga la herramienta.</td></tr><tr><td><strong>Rebobinar</strong></td><td>Vuelve a un mensaje anterior y lo reescribe con lo que ya sabes.</td><td>Conservas el contexto bueno y tiras solo lo que vino después.</td></tr><tr><td><strong>Sesión nueva</strong></td><td>La opción nuclear.</td><td>La correcta ante clash, o ante poisoning cuando no sabes en qué turno entró el error.</td></tr></tbody></table></div>
@@ -625,36 +652,36 @@ Ya probado y descartado: validar en el controlador (duplica la regla del dominio
 
 </section>
 </section>
-<section class="seccion" data-nivel="1" id="m02-cinco-mensajes-clave">
+<section class="seccion" data-nivel="1" data-agente id="m02-cinco-mensajes-clave">
 <h2>Cinco mensajes clave<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m02-cinco-mensajes-clave"></button>
 <ol><li>El contexto es un presupuesto de atención, no un almacén. Cada token compite con los demás.</li><li>La ventana nominal no es la capacidad efectiva. Caber no es suficiente.</li><li>Lo que está en medio se pierde. Lo crítico va arriba o abajo.</li><li>Si tienes que repetir algo por segunda vez, el contexto está saturado. Mide antes de insistir.</li><li>Restar suele ganar a sumar. Veinte veces más contexto puede rendir peor.</li></ol>
 
 </section>
-<section class="seccion" data-nivel="2" id="m02-practica-2-el-mismo-prompt-con-contexto-10-min-individual">
+<section class="seccion" data-nivel="2" data-agente id="m02-practica-2-el-mismo-prompt-con-contexto-10-min-individual">
 <h2>Práctica 2 · El mismo prompt con contexto (10 min, individual)<span class="marca n2">Media</span></h2><button class="quitar" data-clave="m02-practica-2-el-mismo-prompt-con-contexto-10-min-individual"></button>
 <p>Mismo repositorio, rama <code>contexto</code>: la misma aplicación, ahora con capas, un <code>AGENTS.md</code> y un <code>CONTEXT.md</code> con el conocimiento del negocio.</p>
 <ol><li><strong>Arrancad (2 min).</strong> <code>git switch contexto</code>, <code>pnpm install</code> y <code>pnpm dev</code>. Echad un vistazo al <code>AGENTS.md</code>.</li><li><strong>El mismo prompt (5 min).</strong> Lanzadlo y fijaos en <strong>qué ficheros lee antes de escribir</strong>.</li><li><strong>El cotejo (3 min).</strong> Compara con lo que te salió en la práctica 1 y pega en el chat la diferencia que más te llame la atención.</li></ol>
 <p>Guarda el intento en el cuaderno del laboratorio para compararlo con el anterior. Una o dos personas comparten pantalla y enseñan su comparación.</p>
 
 </section>
-<section class="seccion" data-nivel="1" id="m02-el-limite-del-contexto">
+<section class="seccion" data-nivel="1" data-agente id="m02-el-limite-del-contexto">
 <h2>El límite del contexto<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m02-el-limite-del-contexto"></button>
 <p>Ya sabes qué meter en la ventana, cuánto, en qué orden y cuándo podar. Pones todo eso bien. <strong>Y el agente, con el contexto perfecto, sigue decidiendo por su cuenta el qué y el cómo.</strong> De ahí sale el siguiente peldaño.</p>
 
 </section>
 </article>
-<article class="modulo" data-nivel="1" id="m03" data-numero="03">
+<article class="modulo" data-nivel="1" data-agente id="m03" data-numero="03">
 <header><p class="num">Módulo <span class="n-mod">03</span></p><h1>RPI: Research, Plan, Implement<span class="marca n1">Resumida</span></h1><button class="quitar" data-clave="m03"></button></header>
 <blockquote class="frase"><p><strong>En una frase.</strong> El plan es lo único que puedes revisar antes de que exista el código: es el último momento en que decir que no sale barato. <button class="dia" data-d="1" data-n="53" title="Ver la diapositiva">D1·53</button></p></blockquote>
 <details class="video" data-video="03"><summary>Vídeo explicativo del módulo</summary><video controls preload="none" src="../03-videos/03-rpi.mp4"></video></details>
-<section class="seccion" data-nivel="1" id="m03-por-que-rpi-y-por-que-no">
+<section class="seccion" data-nivel="1" data-agente id="m03-por-que-rpi-y-por-que-no">
 <h2>Por qué RPI, y por qué no<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m03-por-que-rpi-y-por-que-no"></button>
 <p>Lo que el agente <strong>ya hace solo</strong>: lee el código antes de tocarlo (y cada versión lo hace mejor), planifica por dentro (no hace falta obligarlo a pensar antes) y se le ocurren los casos límite (y te avisa de lo que ya ha decidido).</p>
 <p><strong>Si tu motivo para usar RPI es que el modelo piensa mejor así, la próxima versión te quitará la razón.</strong></p>
 <p>El motivo que sí aguanta: <strong>el plan es lo único que puedes revisar antes de que exista el código.</strong> Revisar un plan cuesta minutos; revisar el diff que sale de él, una tarde.</p>
 
 </section>
-<section class="seccion" data-nivel="1" id="m03-tres-fases-definidas-por-lo-que-tienen-prohibido">
+<section class="seccion" data-nivel="1" data-agente id="m03-tres-fases-definidas-por-lo-que-tienen-prohibido">
 <h2>Tres fases, definidas por lo que tienen prohibido<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m03-tres-fases-definidas-por-lo-que-tienen-prohibido"></button>
 <p>Lo que hacen es obvio. Lo que se saltan es lo que tienen prohibido.</p>
 <div class="tabla"><table><thead><tr><th>Fase</th><th>Prohibido</th><th>Deja</th></tr></thead><tbody><tr><td><strong>Research</strong></td><td>No propone soluciones. No escribe código.</td><td>Un mapa de hechos con su fuente y preguntas abiertas (<code>research.md</code>)</td></tr><tr><td><strong>Plan</strong></td><td>No escribe código. No deja decisiones abiertas.</td><td>Ficheros, piezas, fases y verificación (<code>plan.md</code>)</td></tr><tr><td><strong>Implement</strong></td><td>No toma decisiones. Si se topa con una, para y pregunta.</td><td>El código, fase a fase, verificado</td></tr></tbody></table></div>
@@ -684,20 +711,20 @@ decida el camino. Aquí solo lees, y el único fichero que escribes es research.
 6. Entrega: resume y pregunta si lo guardas en research.md.</code></pre></figure>
 
 </section>
-<section class="seccion" data-nivel="1" id="m03-el-techo-del-research-es-el-repositorio">
+<section class="seccion" data-nivel="1" data-agente id="m03-el-techo-del-research-es-el-repositorio">
 <h2>El techo del research es el repositorio<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m03-el-techo-del-research-es-el-repositorio"></button>
 <p>El agente puede investigar tu código perfectamente y seguir sin saber que una consulta se ejecuta en cada carga de la home, que hay clientes con diez mil pedidos, o que los datos de hace dos años están en otro sistema y cuestan dinero.</p>
 <p><strong>Eso no está en ningún fichero. Está en la cabeza de alguien de tu empresa, y el único sitio por donde puede entrar es el plan.</strong></p>
 
 </section>
-<section class="seccion" data-nivel="1" id="m03-el-reparto-de-tiempo-es-contraintuitivo">
+<section class="seccion" data-nivel="1" data-agente id="m03-el-reparto-de-tiempo-es-contraintuitivo">
 <h2>El reparto de tiempo es contraintuitivo<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m03-el-reparto-de-tiempo-es-contraintuitivo"></button>
 <div class="tabla"><table><thead><tr><th>Research</th><th>Plan</th><th>Implement</th></tr></thead><tbody><tr><td>Aquí se va tu tiempo</td><td>Y aquí también</td><td>Poco tiempo tuyo: se delega entera</td></tr></tbody></table></div>
 <p><strong>Si pasas la mayor parte del tiempo implementando, no has delegado. Has pedido.</strong></p>
 <blockquote class="analogia"><p><strong>Analogía.</strong> Un arquitecto pasa semanas con el plano y casi no pisa la obra. Si está cada día en la obra corrigiendo tabiques, el plano era malo, o no había plano.</p></blockquote>
 
 </section>
-<section class="seccion" data-nivel="2" id="m03-practica-3-el-mismo-prompt-por-fases-10-min-individual">
+<section class="seccion" data-nivel="2" data-agente id="m03-practica-3-el-mismo-prompt-por-fases-10-min-individual">
 <h2>Práctica 3 · El mismo prompt por fases (10 min, individual)<span class="marca n2">Media</span></h2><button class="quitar" data-clave="m03-practica-3-el-mismo-prompt-por-fases-10-min-individual"></button>
 <p>Mismo repositorio, rama <code>rpi</code>. Antes de empezar, <strong>fijad el modelo y el nivel de esfuerzo, y apuntadlos.</strong></p>
 <ol><li><strong>Research (3 min).</strong> Pedidle que investigue lo necesario para la tarea, sin proponer soluciones y sin escribir código.</li><li><strong>Plan (4 min).</strong> Con lo investigado, que escriba el plan, todavía sin código. <strong>Parad en el plan</strong>, revisadlo y corregid lo que haga falta.</li><li><strong>Implement (3 min).</strong> Que implemente el plan corregido. No hace falta que acabe.</li></ol>
@@ -709,7 +736,7 @@ decida el camino. Aquí solo lees, y el único fichero que escribes es research.
 <ul><li><strong>¿Qué habéis corregido en el plan?</strong> Lo que el agente decidió por su cuenta sin preguntaros.</li><li><strong>¿En qué momento habríais podido decir que no?</strong> Con un plan delante, antes de que existiera una línea de código. Sin él, leyendo el diff de la práctica de contexto.</li><li><strong>¿Corrigieron menos en el plan quienes usaron el modelo más caro o el esfuerzo más alto?</strong> Sale parecido. Más esfuerzo mejora el plan, pero no levanta el techo del research. Si pagas esfuerzo caro, gástalo en el plan, no en implementar.</li><li><strong>¿Qué restricción de vuestro trabajo no está escrita en ningún sitio?</strong> Casi siempre hay una, y suele ser la más cara.</li></ul>
 
 </section>
-<section class="seccion" data-nivel="1" id="m03-el-limite-de-rpi">
+<section class="seccion" data-nivel="1" data-agente id="m03-el-limite-de-rpi">
 <h2>El límite de RPI<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m03-el-limite-de-rpi"></button>
 <p>El plan era bueno y el código parece correcto. <strong>¿Cómo sé que lo está? Si lo leo entero, no he delegado nada.</strong></p>
 
@@ -853,27 +880,27 @@ src/ui/buscadorView.mjs: tenía 0, ahora 1
 
 </section>
 </article>
-<article class="modulo" data-nivel="1" id="m05" data-numero="05">
+<article class="modulo" data-nivel="1" data-agente id="m05" data-numero="05">
 <header><p class="num">Módulo <span class="n-mod">05</span></p><h1>Guardarraíles<span class="marca n1">Resumida</span></h1><button class="quitar" data-clave="m05"></button></header>
 <blockquote class="frase"><p><strong>En una frase.</strong> Lo que depende de acordarse, un día se olvida: las rules fijan el criterio de forma probabilística y los hooks lo imponen de forma determinista. <button class="dia" data-d="1" data-n="76" title="Ver la diapositiva">D1·76</button></p></blockquote>
 <details class="video" data-video="05"><summary>Vídeo explicativo del módulo</summary><video controls preload="none" src="../03-videos/05-guardarrailes.mp4"></video></details>
-<section class="seccion" data-nivel="2" id="m05-el-criterio-es-el-de-tu-equipo">
+<section class="seccion" data-nivel="2" data-agente id="m05-el-criterio-es-el-de-tu-equipo">
 <h2>El criterio es el de tu equipo<span class="marca n2">Media</span></h2><button class="quitar" data-clave="m05-el-criterio-es-el-de-tu-equipo"></button>
 <p>El ejemplo del curso: <strong>las vistas no llaman a la API; los datos llegan por <code>pokemonService</code>.</strong> Si tu equipo pone esa frontera en otro sitio, el mecanismo es idéntico. <strong>Lo que se codifica es el acuerdo.</strong></p>
 
 </section>
-<section class="seccion" data-nivel="1" id="m05-tres-escalones">
+<section class="seccion" data-nivel="1" data-agente id="m05-tres-escalones">
 <h2>Tres escalones<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m05-tres-escalones"></button>
 <div class="tabla"><table><thead><tr><th>Escalón</th><th>Cómo funciona</th><th>Su límite</th></tr></thead><tbody><tr><td><strong>El prompt</strong></td><td>Se lo pides y obedece.</td><td>A la tercera petición vuelve a llamar a la API desde una vista. Hay que decirlo siempre, y cada persona lo dice a su manera.</td></tr><tr><td><strong>Las rules</strong></td><td>Lo escribes una vez en el fichero de reglas. Es sistemático, y es un avance real.</td><td>Sigue siendo una instrucción que el modelo pondera junto a las demás.</td></tr><tr><td><strong>El hook</strong></td><td>Un programa revisa cada fichero en cuanto el agente lo escribe y, si incumple el criterio, lo obliga a corregirlo.</td><td>No pondera, no interpreta, no tiene días buenos y días malos.</td></tr></tbody></table></div>
 <p>En Claude Code, Codex y Copilot el contrato del hook es el mismo: <strong>código de salida 2 y el motivo en stderr.</strong></p>
 
 </section>
-<section class="seccion" data-nivel="1" id="m05-las-rules-son-probabilisticas">
+<section class="seccion" data-nivel="1" data-agente id="m05-las-rules-son-probabilisticas">
 <h2>Las rules son probabilísticas<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m05-las-rules-son-probabilisticas"></button>
 <p>El problema no es que fallen a veces. <strong>No puedes demostrar que no fallan</strong>, y un guardarraíl cuya efectividad no puedes demostrar no es un guardarraíl.</p>
 
 </section>
-<section class="seccion" data-nivel="2" id="m05-dos-ficheros-de-rules-para-cuatro-herramientas">
+<section class="seccion" data-nivel="2" data-agente id="m05-dos-ficheros-de-rules-para-cuatro-herramientas">
 <h2>Dos ficheros de rules para cuatro herramientas<span class="marca n2">Media</span></h2><button class="quitar" data-clave="m05-dos-ficheros-de-rules-para-cuatro-herramientas"></button>
 <p>Los hooks han convergido en los eventos, no en el sitio. Los de Copilot están en Preview.</p>
 <div class="tabla"><table><thead><tr><th>Herramienta</th><th>Rules</th><th>Hook</th></tr></thead><tbody><tr><td>Claude Code</td><td><code>CLAUDE.md</code></td><td><code>.claude/settings.json</code> · <code>PostToolUse</code> y <code>Stop</code></td></tr><tr><td>Codex</td><td><code>AGENTS.md</code></td><td><code>.codex/hooks.json</code> · <code>PostToolUse</code> y <code>Stop</code></td></tr><tr><td>Cursor</td><td><code>AGENTS.md</code></td><td><code>.cursor/hooks.json</code> · <code>postToolUse</code> y <code>stop</code></td></tr><tr><td>Copilot (VS Code)</td><td><code>AGENTS.md</code></td><td><code>.github/hooks/*.json</code> · <code>PostToolUse</code> y <code>Stop</code> (Preview)</td></tr></tbody></table></div>
@@ -881,7 +908,7 @@ src/ui/buscadorView.mjs: tenía 0, ahora 1
 <figure class="codigo"><figcaption>markdown<button class="copiar">Copiar</button></figcaption><pre><code>@AGENTS.md</code></pre></figure>
 
 </section>
-<section class="seccion" data-nivel="1" id="m05-el-hook-de-punta-a-punta">
+<section class="seccion" data-nivel="1" data-agente id="m05-el-hook-de-punta-a-punta">
 <h2>El hook, de punta a punta<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m05-el-hook-de-punta-a-punta"></button>
 <p>La configuración para Claude Code, tal como está en el repositorio del curso:</p>
 <figure class="codigo"><figcaption>json<button class="copiar">Copiar</button></figcaption><pre><code>{
@@ -944,7 +971,7 @@ código: 2</code></pre></figure>
 # package.json: "prepare": "git config core.hooksPath .githooks"</code></pre></figure>
 
 </section>
-<section class="seccion" data-nivel="2" id="m05-practica-5-el-mismo-prompt-con-guardarrailes-15-min-individual">
+<section class="seccion" data-nivel="2" data-agente id="m05-practica-5-el-mismo-prompt-con-guardarrailes-15-min-individual">
 <h2>Práctica 5 · El mismo prompt con guardarraíles (15 min, individual)<span class="marca n2">Media</span></h2><button class="quitar" data-clave="m05-practica-5-el-mismo-prompt-con-guardarrailes-15-min-individual"></button>
 <p>Mismo repositorio, rama <code>guardarrailes</code>: la misma aplicación con linters, tests y hooks. Los de git se ejecutan al hacer commit y al hacer push; los del agente, cada vez que edita un fichero.</p>
 <ol><li><strong>Arrancad (3 min).</strong> <code>git switch guardarrailes</code>, <code>pnpm install</code> y <code>pnpm verify</code>.</li><li><strong>El mismo prompt (8 min).</strong> Lanzadlo y fijaos en <strong>cuándo lo para un hook y qué hace después.</strong></li><li><strong>El cotejo (4 min).</strong> Comparad con lo que salió en <code>contexto</code>: qué hooks saltaron, qué le obligaron a cambiar y por dónde acabó yendo el código. Pega en el chat cuántas veces lo paró un hook.</li></ol>
@@ -955,26 +982,26 @@ código: 2</code></pre></figure>
 <ol><li><strong>¿Cuántas veces lo paró un hook y qué hizo con el error?</strong> Nadie tuvo que leer el aviso: lo leyó el agente y lo corrigió.</li><li><strong>¿Qué regla del fichero de rules cumplió sin que hiciera falta el hook, y cuál solo porque el hook lo paró?</strong> A unas personas les pasó una cosa y a otras otra: eso es lo que significa probabilístico.</li><li><strong>La sorpresa.</strong> Todo en verde, ¿y la tabla está bien? Los linters no saben de Pokémon.</li></ol>
 
 </section>
-<section class="seccion" data-nivel="1" id="m05-un-guardarrail-determinista-no-es-un-guardarrail-completo">
+<section class="seccion" data-nivel="1" data-agente id="m05-un-guardarrail-determinista-no-es-un-guardarrail-completo">
 <h2>Un guardarraíl determinista no es un guardarraíl completo<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m05-un-guardarrail-determinista-no-es-un-guardarrail-completo"></button>
 <p>Sus agujeros no avisan: por ahí el cambio pasa sin que nadie lo mire.</p>
 <div class="tabla"><table><thead><tr><th>Agujero</th><th>Qué pasa</th></tr></thead><tbody><tr><td><strong>Solo mira lo que conoce</strong></td><td>Revisa <code>.ts</code>, <code>.tsx</code> y <code>.css</code> dentro de <code>src/</code>. Un script, un test fuera de <code>src/</code> o un fichero de configuración pasan sin mirar.</td></tr><tr><td><strong>Sin ruta, no decide</strong></td><td>Cada herramienta describe la edición a su manera. Si no encuentra una ruta reconocible, deja pasar.</td></tr><tr><td><strong>Se rinde para no entrar en bucle</strong></td><td>Si <code>pnpm verify</code> sigue fallando después de reintentar, deja terminar al agente.</td></tr><tr><td><strong>En Cursor, solo aconseja</strong></td><td>Tras editar, el error le llega como contexto, sin bloqueo. Es un informe, no una garantía.</td></tr></tbody></table></div>
 
 </section>
-<section class="seccion" data-nivel="1" id="m05-mapa-final-del-dia-1">
+<section class="seccion" data-nivel="1" data-agente id="m05-mapa-final-del-dia-1">
 <h2>Mapa final del día 1<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m05-mapa-final-del-dia-1"></button>
 <p>Cuatro piezas, y qué problema resuelve cada una:</p>
 <div class="tabla"><table><thead><tr><th></th><th>Pieza</th><th>Qué resuelve</th></tr></thead><tbody><tr><td>Hoy, con las manos</td><td><strong>Rules</strong></td><td>Fijan criterio de forma probabilística.</td></tr><tr><td></td><td><strong>Hooks</strong></td><td>Lo imponen de forma determinista.</td></tr><tr><td>Mañana, dentro del sistema</td><td><strong>Skills</strong></td><td>Empaquetan un procedimiento que se repite.</td></tr><tr><td></td><td><strong>Subagentes</strong></td><td>Aíslan contexto para que una tarea larga no contamine la conversación principal.</td></tr></tbody></table></div>
 <p><strong>Los MCPs conectan con fuera; no resuelven ninguno de estos problemas.</strong></p>
 
 </section>
-<section class="seccion" data-nivel="1" id="m05-el-limite-de-los-guardarrailes">
+<section class="seccion" data-nivel="1" data-agente id="m05-el-limite-de-los-guardarrailes">
 <h2>El límite de los guardarraíles<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m05-el-limite-de-los-guardarrailes"></button>
 <p>Tengo el proceso, la red y los guardarraíles. <strong>Pero lo sigo conduciendo yo, sesión a sesión.</strong> El día 2: el sistema, la especificación y la verificación. Y el último problema ya no es técnico.</p>
 
 </section>
 </article>
-<article class="modulo" data-nivel="1" id="m06" data-numero="06">
+<article class="modulo" data-nivel="1" data-agente id="m06" data-numero="06">
 <header><p class="num">Módulo <span class="n-mod">06</span></p><h1>El sistema: skills y workflow<span class="marca n1">Resumida</span></h1><button class="quitar" data-clave="m06"></button></header>
 <blockquote class="frase"><p><strong>En una frase.</strong> Una skill es un proceso tuyo escrito para que lo haga el agente; cuando las encadenas con agentes dedicados y umbrales, dejas de estar dentro del bucle y pasas a estar encima. <button class="dia" data-d="2" data-n="1" title="Ver la diapositiva">D2·1</button> <button class="dia" data-d="2" data-n="5" title="Ver la diapositiva">D2·5</button> <button class="dia" data-d="2" data-n="9" title="Ver la diapositiva">D2·9</button></p></blockquote>
 <details class="video" data-video="06"><summary>Vídeo explicativo del módulo</summary><video controls preload="none" src="../03-videos/06-skills-y-workflow.mp4"></video></details>
@@ -985,18 +1012,18 @@ código: 2</code></pre></figure>
 <ul><li><strong>Sentando las bases.</strong> Pedir no es delegar: si tienes que leerlo entero, has pedido. Y la IA amplifica lo que encuentra en tu repositorio.</li><li><strong>Contexto.</strong> Todo el estado que ve el modelo al inferir. Tu mensaje es la parte más pequeña.</li><li><strong>Problemas.</strong> La ventana nominal no es la capacidad efectiva: la curva en U y las cuatro formas de fallar.</li></ul>
 
 </section>
-<section class="seccion" data-nivel="1" id="m06-que-es-una-skill">
+<section class="seccion" data-nivel="1" data-agente id="m06-que-es-una-skill">
 <h2>Qué es una skill<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m06-que-es-una-skill"></button>
 <p><strong>Una skill es un proceso tuyo escrito en lenguaje natural para que lo haga el agente.</strong> Cómo revisas un PR, cómo preparas una release, cómo investigas una alerta. Lo que hoy vive en tu cabeza o en una wiki pasa a un fichero que el agente sigue paso a paso.</p>
 
 </section>
-<section class="seccion" data-nivel="1" id="m06-una-tecnica-de-contexto">
+<section class="seccion" data-nivel="1" data-agente id="m06-una-tecnica-de-contexto">
 <h2>Una técnica de contexto<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m06-una-tecnica-de-contexto"></button>
 <p>Es la <strong>divulgación progresiva</strong> (el principio 3 del día 1), empaquetada:</p>
 <div class="tabla"><table><thead><tr><th>Cuándo se carga</th><th>Qué</th></tr></thead><tbody><tr><td><strong>Siempre</strong></td><td>El nombre y la descripción. Unas pocas líneas por skill: con eso el agente sabe cuándo le toca usarla.</td></tr><tr><td><strong>Al usarla</strong></td><td>El <code>SKILL.md</code> entero: los pasos del proceso, escritos como se los contarías a alguien del equipo.</td></tr><tr><td><strong>Si hace falta</strong></td><td>Scripts, plantillas y referencias que la skill nombra. Se leen o se ejecutan en el paso que los pide.</td></tr></tbody></table></div>
 
 </section>
-<section class="seccion" data-nivel="1" id="m06-un-ejemplo-revisar-un-pr">
+<section class="seccion" data-nivel="1" data-agente id="m06-un-ejemplo-revisar-un-pr">
 <h2>Un ejemplo: revisar un PR<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m06-un-ejemplo-revisar-un-pr"></button>
 <p>Una carpeta con un <code>SKILL.md</code> y lo que este necesita (está entera en <code>02-ejemplos-codigo/demo/.claude/skills/revisar-pr/</code>):</p>
 <figure class="codigo"><figcaption>text<button class="copiar">Copiar</button></figcaption><pre><code>.claude/skills/revisar-pr/
@@ -1025,13 +1052,13 @@ echo "$cambiados" | grep -E '^[MD].*\.test\.' || echo "ninguno"</code></pre></fi
 <blockquote class="analogia"><p><strong>Analogía.</strong> Una skill es la ficha de un procedimiento colgada en la pared del taller: el título se ve desde lejos, la ficha se lee cuando toca hacer ese trabajo, y las herramientas que nombra se cogen del cajón en el paso que las pide.</p></blockquote>
 
 </section>
-<section class="seccion" data-nivel="2" id="m06-como-se-adopta-invirtiendo-la-dependencia">
+<section class="seccion" data-nivel="2" data-agente id="m06-como-se-adopta-invirtiendo-la-dependencia">
 <h2>Cómo se adopta: invirtiendo la dependencia<span class="marca n2">Media</span></h2><button class="quitar" data-clave="m06-como-se-adopta-invirtiendo-la-dependencia"></button>
 <ol><li><strong>Rules de consenso.</strong> Lo que el equipo ya acordaba, escrito para la máquina: testing, estilos, navegación, traducciones.</li><li><strong>Skills.</strong> Tareas concretas y repetibles: componer la PR, investigar un problema, parchear una vulnerabilidad.</li></ol>
 <p><strong>El problema:</strong> por bien definidos que estén, siguen siendo comandos. El humano los lanza uno detrás de otro, todo el rato.</p>
 
 </section>
-<section class="seccion" data-nivel="1" id="m06-el-workflow-implement">
+<section class="seccion" data-nivel="1" data-agente id="m06-el-workflow-implement">
 <h2>El workflow /implement<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m06-el-workflow-implement"></button>
 <p><strong>La skill se convierte en orquestación:</strong> agentes dedicados, revisión del plan, review puntuado y umbral de merge. Ocho fases, tres en paralelo. <strong>Agentes dedicados y nada espera al humano.</strong></p>
 <div class="tabla"><table><thead><tr><th>#</th><th>Fase</th><th>Quién</th><th>Qué hace</th></tr></thead><tbody><tr><td>1</td><td>Análisis</td><td>subagente <code>researcher</code></td><td>Plan con criterios de aceptación verificables</td></tr><tr><td>2</td><td>Plan review</td><td>agente del workflow (en paralelo)</td><td>Quita ficheros sin consumidor y añade la opción más simple a cada supuesto</td></tr><tr><td>3</td><td>Rama</td><td>agente del workflow (en paralelo)</td><td><code>feature/&lt;slug&gt;</code> desde la base</td></tr><tr><td>4</td><td>Preflight</td><td>script determinista (en paralelo)</td><td>git y gh accesibles, navegador instalado y <code>pnpm check</code> en verde antes de tocar nada</td></tr><tr><td>5</td><td>Implementación</td><td>subagente <code>task-implementer</code></td><td>Código y tests hasta <code>pnpm check</code> en verde, y commit de checkpoint</td></tr><tr><td>6</td><td>Review</td><td>gates deterministas ‖ <code>reviewer</code> → triaje</td><td>Nota de <em>Merge Safety</em> ponderada; bucle de hasta 3 rondas de vuelta a la implementación</td></tr><tr><td>7</td><td>Verificación</td><td>subagente <code>browser-verifier</code></td><td>Un test de Playwright desechable por criterio, con captura</td></tr><tr><td>8</td><td>PR</td><td>subagente <code>pr-creator</code></td><td>Push y PR en borrador, con salvedades y capturas</td></tr></tbody></table></div>
@@ -1088,7 +1115,7 @@ skills:
 ---</code></pre></figure>
 
 </section>
-<section class="seccion" data-nivel="2" id="m06-practica-6-el-mismo-prompt-llevado-por-el-workflow-20-min-individual">
+<section class="seccion" data-nivel="2" data-agente id="m06-practica-6-el-mismo-prompt-llevado-por-el-workflow-20-min-individual">
 <h2>Práctica 6 · El mismo prompt, llevado por el workflow (20 min, individual)<span class="marca n2">Media</span></h2><button class="quitar" data-clave="m06-practica-6-el-mismo-prompt-llevado-por-el-workflow-20-min-individual"></button>
 <p>Repositorio de las prácticas, rama <code>harness</code>. Antes de abrir el agente: <code>git switch harness</code> y <code>pnpm install</code>.</p>
 <figure class="codigo"><figcaption>text<button class="copiar">Copiar</button></figcaption><pre><code>lanza el workflow @.claude/workflows/implement.mjs para la siguiente
@@ -1096,7 +1123,7 @@ funcionalidad: Añade al proyecto web una tabla interactiva con las
 ventajas y desventajas entre todos los tipos de Pokémon.</code></pre></figure>
 
 </section>
-<section class="seccion" data-nivel="1" id="m06-el-limite-del-sistema">
+<section class="seccion" data-nivel="1" data-agente id="m06-el-limite-del-sistema">
 <h2>El límite del sistema<span class="marca n1">Resumida</span></h2><button class="quitar" data-clave="m06-el-limite-del-sistema"></button>
 <p><strong>Montar un flujo que te funcione a ti es fácil. Montar un flujo que le funcione a todo tu equipo es lo difícil.</strong></p>
 <p>Y el cuello de botella se ha movido: <strong>después de la IA está en la especificación</strong> (fase 02). Lo que le pides no llega bajado a tierra.</p>
@@ -1535,6 +1562,7 @@ npx skills add 540/agentic-toolbox</code></pre></figure>
 
 </section>
 </article></div>
+    <div id="vista-vivo" class="vista" hidden></div>
     <div id="vista-lab" class="vista" hidden></div>
     <div id="vista-videos" class="vista" hidden></div>
     <div id="vista-diapos" class="vista" hidden></div>
@@ -1564,7 +1592,7 @@ npx skills add 540/agentic-toolbox</code></pre></figure>
 </div>
 
 <script>
-const DATOS = {"rutas":[{"n":1,"id":"resumida","nombre":"Resumida","lema":"Solo los grandes temas de desarrollo","duracion":"100 min","secciones":46,"modulos":9,"ejercicios":10,"minutosTaller":82},{"n":2,"id":"media","nombre":"Media","lema":"Con el detalle, las tablas y las prácticas","duracion":"media jornada","secciones":84,"modulos":12,"ejercicios":14,"minutosTaller":149},{"n":3,"id":"completa","nombre":"Completa","lema":"Cada tema y cada diapositiva del curso","duracion":"dos jornadas","secciones":103,"modulos":13,"ejercicios":15,"minutosTaller":159}],"total":{"1":86,"2":80},"donde":{"1:3":{"id":"m00-el-punto-de-partida","etiqueta":"La tesis: pedir no es delegar › El punto de partida","nivel":2},"1:8":{"id":"m00-pedir-frente-a-delegar","etiqueta":"La tesis: pedir no es delegar › Pedir frente a delegar","nivel":1},"1:9":{"id":"m00-pedir-frente-a-delegar","etiqueta":"La tesis: pedir no es delegar › Pedir frente a delegar","nivel":1},"1:10":{"id":"m00-por-que-con-personas-si-funciona","etiqueta":"La tesis: pedir no es delegar › Por qué con personas sí funciona","nivel":1},"1:11":{"id":"m00-la-ia-replica-y-amplifica-lo-que-encuentra","etiqueta":"La tesis: pedir no es delegar › La IA replica y amplifica lo que encuentra","nivel":1},"1:6":{"id":"m00-tres-terminos-un-significado-cada-uno","etiqueta":"La tesis: pedir no es delegar › Tres términos, un significado cada uno","nivel":2},"1:7":{"id":"m00-el-ecosistema","etiqueta":"La tesis: pedir no es delegar › El ecosistema","nivel":2},"1:12":{"id":"m00-la-escalera-de-fallos","etiqueta":"La tesis: pedir no es delegar › La escalera de fallos","nivel":1},"1:13":{"id":"m00-la-escalera-de-fallos","etiqueta":"La tesis: pedir no es delegar › La escalera de fallos","nivel":1},"1:14":{"id":"m00-la-escalera-de-fallos","etiqueta":"La tesis: pedir no es delegar › La escalera de fallos","nivel":1},"1:15":{"id":"m00-la-escalera-de-fallos","etiqueta":"La tesis: pedir no es delegar › La escalera de fallos","nivel":1},"1:18":{"id":"m00-donde-estaba-el-cuello-de-botella","etiqueta":"La tesis: pedir no es delegar › Dónde estaba el cuello de botella","nivel":2},"1:16":{"id":"m00-antes-y-despues-del-curso","etiqueta":"La tesis: pedir no es delegar › Antes y después del curso","nivel":3},"1:2":{"id":"m00-que-no-es-esto-y-como-se-trabaja","etiqueta":"La tesis: pedir no es delegar › Qué no es esto y cómo se trabaja","nivel":3},"1:17":{"id":"m00-que-no-es-esto-y-como-se-trabaja","etiqueta":"La tesis: pedir no es delegar › Qué no es esto y cómo se trabaja","nivel":3},"1:1":{"id":"m00","etiqueta":"La tesis: pedir no es delegar","nivel":1},"1:4":{"id":"m00","etiqueta":"La tesis: pedir no es delegar","nivel":1},"1:5":{"id":"m00","etiqueta":"La tesis: pedir no es delegar","nivel":1},"1:20":{"id":"m01-de-donde-sale-el-termino","etiqueta":"Vibecoding › De dónde sale el término","nivel":3},"1:21":{"id":"m01-que-es-exactamente","etiqueta":"Vibecoding › Qué es exactamente","nivel":2},"1:22":{"id":"m01-que-es-exactamente","etiqueta":"Vibecoding › Qué es exactamente","nivel":2},"1:23":{"id":"m01-que-es-exactamente","etiqueta":"Vibecoding › Qué es exactamente","nivel":2},"1:25":{"id":"m01-cuando-deja-de-salir-barato","etiqueta":"Vibecoding › Cuándo deja de salir barato","nivel":2},"1:26":{"id":"m01-cuando-deja-de-salir-barato","etiqueta":"Vibecoding › Cuándo deja de salir barato","nivel":2},"1:24":{"id":"m01-practica-1-vibecodear-10-min-individual","etiqueta":"Vibecoding › Práctica 1 · Vibecodear (10 min, individual)","nivel":2},"1:19":{"id":"m01","etiqueta":"Vibecoding","nivel":2},"1:28":{"id":"m02-que-es-el-contexto","etiqueta":"Contexto › Qué es el contexto","nivel":1},"1:29":{"id":"m02-que-es-el-contexto","etiqueta":"Contexto › Qué es el contexto","nivel":1},"1:30":{"id":"m02-que-es-el-contexto","etiqueta":"Contexto › Qué es el contexto","nivel":1},"1:31":{"id":"m02-anatomia-de-la-ventana","etiqueta":"Contexto › Anatomía de la ventana","nivel":2},"1:32":{"id":"m02-anatomia-de-la-ventana","etiqueta":"Contexto › Anatomía de la ventana","nivel":2},"1:33":{"id":"m02-ventana-nominal-y-capacidad-efectiva","etiqueta":"Contexto › Ventana nominal y capacidad efectiva","nivel":1},"1:34":{"id":"m02-ventana-nominal-y-capacidad-efectiva","etiqueta":"Contexto › Ventana nominal y capacidad efectiva","nivel":1},"1:35":{"id":"m02-las-cuatro-formas-de-fallar","etiqueta":"Contexto › Las cuatro formas de fallar","nivel":1},"1:36":{"id":"m02-el-primer-prompt-es-una-decision-de-arquitectura","etiqueta":"Contexto › El primer prompt es una decisión de arquitectura","nivel":2},"1:38":{"id":"m02-como-medir-el-contexto-nivel-1-ocupacion","etiqueta":"Contexto › Cómo medir el contexto › Nivel 1 · Ocupación","nivel":1},"1:39":{"id":"m02-como-medir-el-contexto-nivel-2-composicion","etiqueta":"Contexto › Cómo medir el contexto › Nivel 2 · Composición","nivel":2},"1:40":{"id":"m02-como-medir-el-contexto-nivel-2-composicion","etiqueta":"Contexto › Cómo medir el contexto › Nivel 2 · Composición","nivel":2},"1:41":{"id":"m02-como-medir-el-contexto-nivel-3-degradacion","etiqueta":"Contexto › Cómo medir el contexto › Nivel 3 · Degradación","nivel":1},"1:37":{"id":"m02-como-medir-el-contexto","etiqueta":"Contexto › Cómo medir el contexto","nivel":1},"1:43":{"id":"m02-los-cuatro-principios-principio-1-reducir-lo-que-entra","etiqueta":"Contexto › Los cuatro principios › Principio 1 · Reducir lo que entra","nivel":2},"1:44":{"id":"m02-los-cuatro-principios-principio-2-colocar-bien-lo-que-entra","etiqueta":"Contexto › Los cuatro principios › Principio 2 · Colocar bien lo que entra","nivel":2},"1:45":{"id":"m02-los-cuatro-principios-principio-3-diferir-la-carga","etiqueta":"Contexto › Los cuatro principios › Principio 3 · Diferir la carga","nivel":2},"1:46":{"id":"m02-los-cuatro-principios-principio-3-diferir-la-carga","etiqueta":"Contexto › Los cuatro principios › Principio 3 · Diferir la carga","nivel":2},"1:47":{"id":"m02-los-cuatro-principios-principio-4-podar-lo-acumulado","etiqueta":"Contexto › Los cuatro principios › Principio 4 · Podar lo acumulado","nivel":1},"1:48":{"id":"m02-los-cuatro-principios-principio-4-podar-lo-acumulado","etiqueta":"Contexto › Los cuatro principios › Principio 4 · Podar lo acumulado","nivel":1},"1:42":{"id":"m02-los-cuatro-principios","etiqueta":"Contexto › Los cuatro principios","nivel":1},"1:50":{"id":"m02-cinco-mensajes-clave","etiqueta":"Contexto › Cinco mensajes clave","nivel":1},"1:51":{"id":"m02-practica-2-el-mismo-prompt-con-contexto-10-min-individual","etiqueta":"Contexto › Práctica 2 · El mismo prompt con contexto (10 min, individual)","nivel":2},"1:52":{"id":"m02-el-limite-del-contexto","etiqueta":"Contexto › El límite del contexto","nivel":1},"1:27":{"id":"m02","etiqueta":"Contexto","nivel":1},"1:49":{"id":"m02","etiqueta":"Contexto","nivel":1},"1:54":{"id":"m03-por-que-rpi-y-por-que-no","etiqueta":"RPI: Research, Plan, Implement › Por qué RPI, y por qué no","nivel":1},"1:55":{"id":"m03-por-que-rpi-y-por-que-no","etiqueta":"RPI: Research, Plan, Implement › Por qué RPI, y por qué no","nivel":1},"1:56":{"id":"m03-tres-fases-definidas-por-lo-que-tienen-prohibido","etiqueta":"RPI: Research, Plan, Implement › Tres fases, definidas por lo que tienen prohibido","nivel":1},"1:57":{"id":"m03-el-techo-del-research-es-el-repositorio","etiqueta":"RPI: Research, Plan, Implement › El techo del research es el repositorio","nivel":1},"1:58":{"id":"m03-el-reparto-de-tiempo-es-contraintuitivo","etiqueta":"RPI: Research, Plan, Implement › El reparto de tiempo es contraintuitivo","nivel":1},"1:59":{"id":"m03-practica-3-el-mismo-prompt-por-fases-10-min-individual","etiqueta":"RPI: Research, Plan, Implement › Práctica 3 · El mismo prompt por fases (10 min, individual)","nivel":2},"1:60":{"id":"m03-debate-10-min","etiqueta":"RPI: Research, Plan, Implement › Debate (10 min)","nivel":3},"1:61":{"id":"m03-el-limite-de-rpi","etiqueta":"RPI: Research, Plan, Implement › El límite de RPI","nivel":1},"1:53":{"id":"m03","etiqueta":"RPI: Research, Plan, Implement","nivel":1},"1:63":{"id":"m04-la-pregunta","etiqueta":"Garantías › La pregunta","nivel":1},"1:65":{"id":"m04-no-es-una-herramienta-es-una-red-terreno-firme-lo-que-ya-no-discute-nadie","etiqueta":"Garantías › No es una herramienta: es una red › Terreno firme: lo que ya no discute nadie","nivel":1},"1:66":{"id":"m04-no-es-una-herramienta-es-una-red-maduro-pero-hay-que-elegir","etiqueta":"Garantías › No es una herramienta: es una red › Maduro, pero hay que elegir","nivel":2},"1:67":{"id":"m04-no-es-una-herramienta-es-una-red-el-frente-abierto-la-especificacion","etiqueta":"Garantías › No es una herramienta: es una red › El frente abierto: la especificación","nivel":2},"1:68":{"id":"m04-no-es-una-herramienta-es-una-red-el-frente-abierto-la-especificacion","etiqueta":"Garantías › No es una herramienta: es una red › El frente abierto: la especificación","nivel":2},"1:64":{"id":"m04-no-es-una-herramienta-es-una-red","etiqueta":"Garantías › No es una herramienta: es una red","nivel":1},"1:69":{"id":"m04-cuando-se-ejecuta-cada-garantia","etiqueta":"Garantías › Cuándo se ejecuta cada garantía","nivel":1},"1:70":{"id":"m04-dos-reglas-que-separan-una-garantia-de-un-adorno","etiqueta":"Garantías › Dos reglas que separan una garantía de un adorno","nivel":1},"1:71":{"id":"m04-dos-reglas-que-separan-una-garantia-de-un-adorno","etiqueta":"Garantías › Dos reglas que separan una garantía de un adorno","nivel":1},"1:72":{"id":"m04-autodiagnostico-8-min-individual","etiqueta":"Garantías › Autodiagnóstico (8 min, individual)","nivel":2},"1:73":{"id":"m04-el-ratchet","etiqueta":"Garantías › El ratchet","nivel":1},"1:74":{"id":"m04-el-ratchet","etiqueta":"Garantías › El ratchet","nivel":1},"1:75":{"id":"m04-el-limite-de-las-garantias","etiqueta":"Garantías › El límite de las garantías","nivel":1},"1:62":{"id":"m04","etiqueta":"Garantías","nivel":1},"1:77":{"id":"m05-el-criterio-es-el-de-tu-equipo","etiqueta":"Guardarraíles › El criterio es el de tu equipo","nivel":2},"1:78":{"id":"m05-tres-escalones","etiqueta":"Guardarraíles › Tres escalones","nivel":1},"1:79":{"id":"m05-las-rules-son-probabilisticas","etiqueta":"Guardarraíles › Las rules son probabilísticas","nivel":1},"1:80":{"id":"m05-dos-ficheros-de-rules-para-cuatro-herramientas","etiqueta":"Guardarraíles › Dos ficheros de rules para cuatro herramientas","nivel":2},"1:81":{"id":"m05-practica-5-el-mismo-prompt-con-guardarrailes-15-min-individual","etiqueta":"Guardarraíles › Práctica 5 · El mismo prompt con guardarraíles (15 min, individual)","nivel":2},"1:82":{"id":"m05-debate-10-min-en-este-orden","etiqueta":"Guardarraíles › Debate (10 min, en este orden)","nivel":3},"1:83":{"id":"m05-un-guardarrail-determinista-no-es-un-guardarrail-completo","etiqueta":"Guardarraíles › Un guardarraíl determinista no es un guardarraíl completo","nivel":1},"1:84":{"id":"m05-mapa-final-del-dia-1","etiqueta":"Guardarraíles › Mapa final del día 1","nivel":1},"1:85":{"id":"m05-el-limite-de-los-guardarrailes","etiqueta":"Guardarraíles › El límite de los guardarraíles","nivel":1},"1:86":{"id":"m05-el-limite-de-los-guardarrailes","etiqueta":"Guardarraíles › El límite de los guardarraíles","nivel":1},"1:76":{"id":"m05","etiqueta":"Guardarraíles","nivel":1},"2:2":{"id":"m06-resumen-del-dia-1","etiqueta":"El sistema: skills y workflow › Resumen del día 1","nivel":3},"2:3":{"id":"m06-resumen-del-dia-1","etiqueta":"El sistema: skills y workflow › Resumen del día 1","nivel":3},"2:4":{"id":"m06-resumen-del-dia-1","etiqueta":"El sistema: skills y workflow › Resumen del día 1","nivel":3},"2:6":{"id":"m06-que-es-una-skill","etiqueta":"El sistema: skills y workflow › Qué es una skill","nivel":1},"2:7":{"id":"m06-una-tecnica-de-contexto","etiqueta":"El sistema: skills y workflow › Una técnica de contexto","nivel":1},"2:8":{"id":"m06-un-ejemplo-revisar-un-pr","etiqueta":"El sistema: skills y workflow › Un ejemplo: revisar un PR","nivel":1},"2:10":{"id":"m06-como-se-adopta-invirtiendo-la-dependencia","etiqueta":"El sistema: skills y workflow › Cómo se adopta: invirtiendo la dependencia","nivel":2},"2:11":{"id":"m06-el-workflow-implement","etiqueta":"El sistema: skills y workflow › El workflow /implement","nivel":1},"2:12":{"id":"m06-practica-6-el-mismo-prompt-llevado-por-el-workflow-20-min-individual","etiqueta":"El sistema: skills y workflow › Práctica 6 · El mismo prompt, llevado por el workflow (20 min, individual)","nivel":2},"2:13":{"id":"m06-el-limite-del-sistema","etiqueta":"El sistema: skills y workflow › El límite del sistema","nivel":1},"2:14":{"id":"m06-el-limite-del-sistema","etiqueta":"El sistema: skills y workflow › El límite del sistema","nivel":1},"2:15":{"id":"m06-el-limite-del-sistema","etiqueta":"El sistema: skills y workflow › El límite del sistema","nivel":1},"2:1":{"id":"m06","etiqueta":"El sistema: skills y workflow","nivel":1},"2:5":{"id":"m06","etiqueta":"El sistema: skills y workflow","nivel":1},"2:9":{"id":"m06","etiqueta":"El sistema: skills y workflow","nivel":1},"2:17":{"id":"m07-la-condicion-de-parada","etiqueta":"Especificación › La condición de parada","nivel":1},"2:18":{"id":"m07-describir-no-es-especificar","etiqueta":"Especificación › Describir no es especificar","nivel":1},"2:19":{"id":"m07-las-cuatro-piezas-de-una-definicion-que-sirve","etiqueta":"Especificación › Las cuatro piezas de una definición que sirve","nivel":1},"2:20":{"id":"m07-de-revisar-el-plan-a-definir-la-tarea","etiqueta":"Especificación › De revisar el plan a definir la tarea","nivel":2},"2:21":{"id":"m07-la-especificacion-minima-solo-parece-barata","etiqueta":"Especificación › La especificación mínima solo parece barata","nivel":2},"2:22":{"id":"m07-cuanto-merece-cada-tipo-de-trabajo","etiqueta":"Especificación › Cuánto merece cada tipo de trabajo","nivel":2},"2:23":{"id":"m07-practica-7-especificar-en-vez-de-implementar-10-min-individual","etiqueta":"Especificación › Práctica 7 · Especificar en vez de implementar (10 min, individual)","nivel":2},"2:24":{"id":"m07-debate-7-min","etiqueta":"Especificación › Debate (7 min)","nivel":3},"2:25":{"id":"m07-sdd-la-especificacion-por-delante","etiqueta":"Especificación › SDD: la especificación por delante","nivel":2},"2:26":{"id":"m07-el-limite-de-la-especificacion","etiqueta":"Especificación › El límite de la especificación","nivel":1},"2:16":{"id":"m07","etiqueta":"Especificación","nivel":1},"2:28":{"id":"m08-el-cuello-de-botella-se-mueve-otra-vez","etiqueta":"Verificación › El cuello de botella se mueve otra vez","nivel":1},"2:29":{"id":"m08-el-cuello-de-botella-se-mueve-otra-vez","etiqueta":"Verificación › El cuello de botella se mueve otra vez","nivel":1},"2:30":{"id":"m08-tres-carriles","etiqueta":"Verificación › Tres carriles","nivel":1},"2:31":{"id":"m08-el-carril-se-decide-en-un-embudo","etiqueta":"Verificación › El carril se decide en un embudo","nivel":1},"2:32":{"id":"m08-practica-8-tres-reglas-20-min-individual-y-por-el-chat","etiqueta":"Verificación › Práctica 8 · Tres reglas (20 min, individual y por el chat)","nivel":2},"2:33":{"id":"m08-debate-10-min","etiqueta":"Verificación › Debate (10 min)","nivel":3},"2:34":{"id":"m08-pedirle-que-no-toque-los-tests-no-funciona","etiqueta":"Verificación › Pedirle que no toque los tests no funciona","nivel":1},"2:35":{"id":"m08-la-red-puede-crecer-sola-no-puede-encogerse-sin-que-nadie-lo-vea","etiqueta":"Verificación › La red puede crecer sola; no puede encogerse sin que nadie lo vea","nivel":1},"2:36":{"id":"m08-el-carril-verde-se-abre-con-evidencia-no-con-fe","etiqueta":"Verificación › El carril verde se abre con evidencia, no con fe","nivel":1},"2:37":{"id":"m08-el-limite-de-la-verificacion","etiqueta":"Verificación › El límite de la verificación","nivel":1},"2:27":{"id":"m08","etiqueta":"Verificación","nivel":1},"2:40":{"id":"m09-worktrees-un-agente-una-copia","etiqueta":"Después de delegar › Worktrees: un agente, una copia","nivel":2},"2:41":{"id":"m09-que-necesita-un-worktree-nuevo-para-arrancar","etiqueta":"Después de delegar › Qué necesita un worktree nuevo para arrancar","nivel":2},"2:42":{"id":"m09-los-contenedores-dos-formas-de-montarlos","etiqueta":"Después de delegar › Los contenedores: dos formas de montarlos","nivel":3},"2:43":{"id":"m09-aislar-la-ejecucion-no-evita-el-choque-al-integrar","etiqueta":"Después de delegar › Aislar la ejecución no evita el choque al integrar","nivel":2},"2:44":{"id":"m09-con-cinco-agentes-el-cuello-de-botella-eres-tu","etiqueta":"Después de delegar › Con cinco agentes, el cuello de botella eres tú","nivel":2},"2:45":{"id":"m09-lo-que-cuesta-estar-en-este-punto","etiqueta":"Después de delegar › Lo que cuesta estar en este punto","nivel":2},"2:47":{"id":"m09-mantenibilidad-a-largo-plazo-lo-que-el-codigo-no-explica","etiqueta":"Después de delegar › Mantenibilidad a largo plazo › Lo que el código no explica","nivel":2},"2:48":{"id":"m09-mantenibilidad-a-largo-plazo-cada-cambio-pasa-el-conjunto-empeora","etiqueta":"Después de delegar › Mantenibilidad a largo plazo › Cada cambio pasa; el conjunto empeora","nivel":2},"2:46":{"id":"m09-mantenibilidad-a-largo-plazo","etiqueta":"Después de delegar › Mantenibilidad a largo plazo","nivel":2},"2:49":{"id":"m09-el-limite","etiqueta":"Después de delegar › El límite","nivel":2},"2:38":{"id":"m09","etiqueta":"Después de delegar","nivel":2},"2:39":{"id":"m09","etiqueta":"Después de delegar","nivel":2},"2:52":{"id":"m10-diagnosticar-vsm-el-mapa-de-como-trabaja-el-equipo","etiqueta":"Llevarlo al equipo › Diagnosticar · VSM: el mapa de cómo trabaja el equipo","nivel":2},"2:53":{"id":"m10-diagnosticar-vsm-el-mapa-de-como-trabaja-el-equipo","etiqueta":"Llevarlo al equipo › Diagnosticar · VSM: el mapa de cómo trabaja el equipo","nivel":2},"2:54":{"id":"m10-diagnosticar-gauntlet-podrias-dejar-de-leer-el-codigo","etiqueta":"Llevarlo al equipo › Diagnosticar · Gauntlet: ¿podrías dejar de leer el código?","nivel":2},"2:55":{"id":"m10-diagnosticar-gauntlet-podrias-dejar-de-leer-el-codigo","etiqueta":"Llevarlo al equipo › Diagnosticar · Gauntlet: ¿podrías dejar de leer el código?","nivel":2},"2:56":{"id":"m10-compartir-que-es-tuyo-y-que-es-del-equipo","etiqueta":"Llevarlo al equipo › Compartir · Qué es tuyo y qué es del equipo","nivel":2},"2:57":{"id":"m10-compartir-agentic-toolbox","etiqueta":"Llevarlo al equipo › Compartir · agentic-toolbox","nivel":3},"2:58":{"id":"m10-mejorar-probar-cada-uno-converger-en-comun","etiqueta":"Llevarlo al equipo › Mejorar · Probar cada uno, converger en común","nivel":2},"2:59":{"id":"m10-mejorar-la-reunion-de-mejora-continua","etiqueta":"Llevarlo al equipo › Mejorar · La reunión de mejora continua","nivel":2},"2:60":{"id":"m10-si-no-leemos-el-codigo-que-miramos","etiqueta":"Llevarlo al equipo › Si no leemos el código, ¿qué miramos?","nivel":2},"2:61":{"id":"m10-la-curva-j","etiqueta":"Llevarlo al equipo › La curva J","nivel":2},"2:62":{"id":"m10-practica-9-donde-estais-y-que-atacariais-primero-7-min-todo-el-grupo","etiqueta":"Llevarlo al equipo › Práctica 9 · Dónde estáis y qué atacaríais primero (7 min, todo el grupo)","nivel":3},"2:50":{"id":"m10","etiqueta":"Llevarlo al equipo","nivel":2},"2:51":{"id":"m10","etiqueta":"Llevarlo al equipo","nivel":2},"2:65":{"id":"m11-no-hace-falta-que-montes-el-flujo-de-cero","etiqueta":"Otros temas › No hace falta que montes el flujo de cero","nivel":3},"2:66":{"id":"m11-ide-y-ade","etiqueta":"Otros temas › IDE y ADE","nivel":3},"2:67":{"id":"m11-bucles-que-corren-sin-nadie-delante","etiqueta":"Otros temas › Bucles que corren sin nadie delante","nivel":3},"2:68":{"id":"m11-mcp-solo-cuando-aporta-algo-que-la-cli-no-da","etiqueta":"Otros temas › MCP solo cuando aporta algo que la CLI no da","nivel":3},"2:69":{"id":"m11-mcp-solo-cuando-aporta-algo-que-la-cli-no-da","etiqueta":"Otros temas › MCP solo cuando aporta algo que la CLI no da","nivel":3},"2:70":{"id":"m11-tres-riesgos-reales","etiqueta":"Otros temas › Tres riesgos reales","nivel":3},"2:71":{"id":"m11-lo-que-esta-por-venir","etiqueta":"Otros temas › Lo que está por venir","nivel":3},"2:63":{"id":"m11","etiqueta":"Otros temas","nivel":3},"2:64":{"id":"m11","etiqueta":"Otros temas","nivel":3},"2:73":{"id":"m12-la-escala-de-uso","etiqueta":"Cierre: la escala de uso › La escala de uso","nivel":1},"2:74":{"id":"m12-la-escala-de-uso","etiqueta":"Cierre: la escala de uso › La escala de uso","nivel":1},"2:75":{"id":"m12-la-escala-de-uso","etiqueta":"Cierre: la escala de uso › La escala de uso","nivel":1},"2:76":{"id":"m12-la-escala-de-uso","etiqueta":"Cierre: la escala de uso › La escala de uso","nivel":1},"2:77":{"id":"m12-antes-y-despues","etiqueta":"Cierre: la escala de uso › Antes y después","nivel":3},"2:79":{"id":"m12-recursos","etiqueta":"Cierre: la escala de uso › Recursos","nivel":3},"2:80":{"id":"m12-recursos","etiqueta":"Cierre: la escala de uso › Recursos","nivel":3},"2:72":{"id":"m12","etiqueta":"Cierre: la escala de uso","nivel":1},"2:78":{"id":"m12","etiqueta":"Cierre: la escala de uso","nivel":1}},"videos":[{"numero":"00","titulo":"La tesis: pedir no es delegar","fichero":"00-la-tesis.mp4","nivel":1},{"numero":"01","titulo":"Vibecoding","fichero":"01-vibecoding.mp4","nivel":2},{"numero":"02","titulo":"Contexto","fichero":"02-contexto.mp4","nivel":1},{"numero":"03","titulo":"RPI: Research, Plan, Implement","fichero":"03-rpi.mp4","nivel":1},{"numero":"04","titulo":"Garantías","fichero":"04-garantias.mp4","nivel":1},{"numero":"05","titulo":"Guardarraíles","fichero":"05-guardarrailes.mp4","nivel":1},{"numero":"06","titulo":"El sistema: skills y workflow","fichero":"06-skills-y-workflow.mp4","nivel":1},{"numero":"07","titulo":"Especificación","fichero":"07-especificacion.mp4","nivel":1},{"numero":"08","titulo":"Verificación","fichero":"08-verificacion.mp4","nivel":1},{"numero":"09","titulo":"Después de delegar","fichero":"09-despues-de-delegar.mp4","nivel":2},{"numero":"10","titulo":"Llevarlo al equipo","fichero":"10-llevarlo-al-equipo.mp4","nivel":2},{"numero":"11","titulo":"Otros temas","fichero":"11-otros-temas.mp4","nivel":3},{"numero":"12","titulo":"Cierre: la escala de uso","fichero":"12-cierre.mp4","nivel":1}]};
+const DATOS = {"rutas":[{"n":1,"id":"resumida","nombre":"Resumida","lema":"Solo los grandes temas de desarrollo","duracion":"100 min","secciones":46,"modulos":9,"ejercicios":10,"minutosTaller":82},{"n":2,"id":"media","nombre":"Media","lema":"Con el detalle, las tablas y las prácticas","duracion":"media jornada","secciones":84,"modulos":12,"ejercicios":14,"minutosTaller":149},{"n":3,"id":"completa","nombre":"Completa","lema":"Cada tema y cada diapositiva del curso","duracion":"dos jornadas","secciones":103,"modulos":13,"ejercicios":15,"minutosTaller":159},{"n":4,"id":"agente","nombre":"Agente","lema":"Solo cómo se usa el agente: contexto, reglas, skills, hooks, workflow y harness, con ejemplos en vivo","duracion":"unas 2 horas","secciones":32,"modulos":4,"ejercicios":4,"minutosTaller":34}],"total":{"1":86,"2":80},"donde":{"1:3":{"id":"m00-el-punto-de-partida","etiqueta":"La tesis: pedir no es delegar › El punto de partida","nivel":2},"1:8":{"id":"m00-pedir-frente-a-delegar","etiqueta":"La tesis: pedir no es delegar › Pedir frente a delegar","nivel":1},"1:9":{"id":"m00-pedir-frente-a-delegar","etiqueta":"La tesis: pedir no es delegar › Pedir frente a delegar","nivel":1},"1:10":{"id":"m00-por-que-con-personas-si-funciona","etiqueta":"La tesis: pedir no es delegar › Por qué con personas sí funciona","nivel":1},"1:11":{"id":"m00-la-ia-replica-y-amplifica-lo-que-encuentra","etiqueta":"La tesis: pedir no es delegar › La IA replica y amplifica lo que encuentra","nivel":1},"1:6":{"id":"m00-tres-terminos-un-significado-cada-uno","etiqueta":"La tesis: pedir no es delegar › Tres términos, un significado cada uno","nivel":2},"1:7":{"id":"m00-el-ecosistema","etiqueta":"La tesis: pedir no es delegar › El ecosistema","nivel":2},"1:12":{"id":"m00-la-escalera-de-fallos","etiqueta":"La tesis: pedir no es delegar › La escalera de fallos","nivel":1},"1:13":{"id":"m00-la-escalera-de-fallos","etiqueta":"La tesis: pedir no es delegar › La escalera de fallos","nivel":1},"1:14":{"id":"m00-la-escalera-de-fallos","etiqueta":"La tesis: pedir no es delegar › La escalera de fallos","nivel":1},"1:15":{"id":"m00-la-escalera-de-fallos","etiqueta":"La tesis: pedir no es delegar › La escalera de fallos","nivel":1},"1:18":{"id":"m00-donde-estaba-el-cuello-de-botella","etiqueta":"La tesis: pedir no es delegar › Dónde estaba el cuello de botella","nivel":2},"1:16":{"id":"m00-antes-y-despues-del-curso","etiqueta":"La tesis: pedir no es delegar › Antes y después del curso","nivel":3},"1:2":{"id":"m00-que-no-es-esto-y-como-se-trabaja","etiqueta":"La tesis: pedir no es delegar › Qué no es esto y cómo se trabaja","nivel":3},"1:17":{"id":"m00-que-no-es-esto-y-como-se-trabaja","etiqueta":"La tesis: pedir no es delegar › Qué no es esto y cómo se trabaja","nivel":3},"1:1":{"id":"m00","etiqueta":"La tesis: pedir no es delegar","nivel":1},"1:4":{"id":"m00","etiqueta":"La tesis: pedir no es delegar","nivel":1},"1:5":{"id":"m00","etiqueta":"La tesis: pedir no es delegar","nivel":1},"1:20":{"id":"m01-de-donde-sale-el-termino","etiqueta":"Vibecoding › De dónde sale el término","nivel":3},"1:21":{"id":"m01-que-es-exactamente","etiqueta":"Vibecoding › Qué es exactamente","nivel":2},"1:22":{"id":"m01-que-es-exactamente","etiqueta":"Vibecoding › Qué es exactamente","nivel":2},"1:23":{"id":"m01-que-es-exactamente","etiqueta":"Vibecoding › Qué es exactamente","nivel":2},"1:25":{"id":"m01-cuando-deja-de-salir-barato","etiqueta":"Vibecoding › Cuándo deja de salir barato","nivel":2},"1:26":{"id":"m01-cuando-deja-de-salir-barato","etiqueta":"Vibecoding › Cuándo deja de salir barato","nivel":2},"1:24":{"id":"m01-practica-1-vibecodear-10-min-individual","etiqueta":"Vibecoding › Práctica 1 · Vibecodear (10 min, individual)","nivel":2},"1:19":{"id":"m01","etiqueta":"Vibecoding","nivel":2},"1:28":{"id":"m02-que-es-el-contexto","etiqueta":"Contexto › Qué es el contexto","nivel":1},"1:29":{"id":"m02-que-es-el-contexto","etiqueta":"Contexto › Qué es el contexto","nivel":1},"1:30":{"id":"m02-que-es-el-contexto","etiqueta":"Contexto › Qué es el contexto","nivel":1},"1:31":{"id":"m02-anatomia-de-la-ventana","etiqueta":"Contexto › Anatomía de la ventana","nivel":2},"1:32":{"id":"m02-anatomia-de-la-ventana","etiqueta":"Contexto › Anatomía de la ventana","nivel":2},"1:33":{"id":"m02-ventana-nominal-y-capacidad-efectiva","etiqueta":"Contexto › Ventana nominal y capacidad efectiva","nivel":1},"1:34":{"id":"m02-ventana-nominal-y-capacidad-efectiva","etiqueta":"Contexto › Ventana nominal y capacidad efectiva","nivel":1},"1:35":{"id":"m02-las-cuatro-formas-de-fallar","etiqueta":"Contexto › Las cuatro formas de fallar","nivel":1},"1:36":{"id":"m02-el-primer-prompt-es-una-decision-de-arquitectura","etiqueta":"Contexto › El primer prompt es una decisión de arquitectura","nivel":2},"1:38":{"id":"m02-como-medir-el-contexto-nivel-1-ocupacion","etiqueta":"Contexto › Cómo medir el contexto › Nivel 1 · Ocupación","nivel":1},"1:39":{"id":"m02-como-medir-el-contexto-nivel-2-composicion","etiqueta":"Contexto › Cómo medir el contexto › Nivel 2 · Composición","nivel":2},"1:40":{"id":"m02-como-medir-el-contexto-nivel-2-composicion","etiqueta":"Contexto › Cómo medir el contexto › Nivel 2 · Composición","nivel":2},"1:41":{"id":"m02-como-medir-el-contexto-nivel-3-degradacion","etiqueta":"Contexto › Cómo medir el contexto › Nivel 3 · Degradación","nivel":1},"1:37":{"id":"m02-como-medir-el-contexto","etiqueta":"Contexto › Cómo medir el contexto","nivel":1},"1:43":{"id":"m02-los-cuatro-principios-principio-1-reducir-lo-que-entra","etiqueta":"Contexto › Los cuatro principios › Principio 1 · Reducir lo que entra","nivel":2},"1:44":{"id":"m02-los-cuatro-principios-principio-2-colocar-bien-lo-que-entra","etiqueta":"Contexto › Los cuatro principios › Principio 2 · Colocar bien lo que entra","nivel":2},"1:45":{"id":"m02-los-cuatro-principios-principio-3-diferir-la-carga","etiqueta":"Contexto › Los cuatro principios › Principio 3 · Diferir la carga","nivel":2},"1:46":{"id":"m02-los-cuatro-principios-principio-3-diferir-la-carga","etiqueta":"Contexto › Los cuatro principios › Principio 3 · Diferir la carga","nivel":2},"1:47":{"id":"m02-los-cuatro-principios-principio-4-podar-lo-acumulado","etiqueta":"Contexto › Los cuatro principios › Principio 4 · Podar lo acumulado","nivel":1},"1:48":{"id":"m02-los-cuatro-principios-principio-4-podar-lo-acumulado","etiqueta":"Contexto › Los cuatro principios › Principio 4 · Podar lo acumulado","nivel":1},"1:42":{"id":"m02-los-cuatro-principios","etiqueta":"Contexto › Los cuatro principios","nivel":1},"1:50":{"id":"m02-cinco-mensajes-clave","etiqueta":"Contexto › Cinco mensajes clave","nivel":1},"1:51":{"id":"m02-practica-2-el-mismo-prompt-con-contexto-10-min-individual","etiqueta":"Contexto › Práctica 2 · El mismo prompt con contexto (10 min, individual)","nivel":2},"1:52":{"id":"m02-el-limite-del-contexto","etiqueta":"Contexto › El límite del contexto","nivel":1},"1:27":{"id":"m02","etiqueta":"Contexto","nivel":1},"1:49":{"id":"m02","etiqueta":"Contexto","nivel":1},"1:54":{"id":"m03-por-que-rpi-y-por-que-no","etiqueta":"RPI: Research, Plan, Implement › Por qué RPI, y por qué no","nivel":1},"1:55":{"id":"m03-por-que-rpi-y-por-que-no","etiqueta":"RPI: Research, Plan, Implement › Por qué RPI, y por qué no","nivel":1},"1:56":{"id":"m03-tres-fases-definidas-por-lo-que-tienen-prohibido","etiqueta":"RPI: Research, Plan, Implement › Tres fases, definidas por lo que tienen prohibido","nivel":1},"1:57":{"id":"m03-el-techo-del-research-es-el-repositorio","etiqueta":"RPI: Research, Plan, Implement › El techo del research es el repositorio","nivel":1},"1:58":{"id":"m03-el-reparto-de-tiempo-es-contraintuitivo","etiqueta":"RPI: Research, Plan, Implement › El reparto de tiempo es contraintuitivo","nivel":1},"1:59":{"id":"m03-practica-3-el-mismo-prompt-por-fases-10-min-individual","etiqueta":"RPI: Research, Plan, Implement › Práctica 3 · El mismo prompt por fases (10 min, individual)","nivel":2},"1:60":{"id":"m03-debate-10-min","etiqueta":"RPI: Research, Plan, Implement › Debate (10 min)","nivel":3},"1:61":{"id":"m03-el-limite-de-rpi","etiqueta":"RPI: Research, Plan, Implement › El límite de RPI","nivel":1},"1:53":{"id":"m03","etiqueta":"RPI: Research, Plan, Implement","nivel":1},"1:63":{"id":"m04-la-pregunta","etiqueta":"Garantías › La pregunta","nivel":1},"1:65":{"id":"m04-no-es-una-herramienta-es-una-red-terreno-firme-lo-que-ya-no-discute-nadie","etiqueta":"Garantías › No es una herramienta: es una red › Terreno firme: lo que ya no discute nadie","nivel":1},"1:66":{"id":"m04-no-es-una-herramienta-es-una-red-maduro-pero-hay-que-elegir","etiqueta":"Garantías › No es una herramienta: es una red › Maduro, pero hay que elegir","nivel":2},"1:67":{"id":"m04-no-es-una-herramienta-es-una-red-el-frente-abierto-la-especificacion","etiqueta":"Garantías › No es una herramienta: es una red › El frente abierto: la especificación","nivel":2},"1:68":{"id":"m04-no-es-una-herramienta-es-una-red-el-frente-abierto-la-especificacion","etiqueta":"Garantías › No es una herramienta: es una red › El frente abierto: la especificación","nivel":2},"1:64":{"id":"m04-no-es-una-herramienta-es-una-red","etiqueta":"Garantías › No es una herramienta: es una red","nivel":1},"1:69":{"id":"m04-cuando-se-ejecuta-cada-garantia","etiqueta":"Garantías › Cuándo se ejecuta cada garantía","nivel":1},"1:70":{"id":"m04-dos-reglas-que-separan-una-garantia-de-un-adorno","etiqueta":"Garantías › Dos reglas que separan una garantía de un adorno","nivel":1},"1:71":{"id":"m04-dos-reglas-que-separan-una-garantia-de-un-adorno","etiqueta":"Garantías › Dos reglas que separan una garantía de un adorno","nivel":1},"1:72":{"id":"m04-autodiagnostico-8-min-individual","etiqueta":"Garantías › Autodiagnóstico (8 min, individual)","nivel":2},"1:73":{"id":"m04-el-ratchet","etiqueta":"Garantías › El ratchet","nivel":1},"1:74":{"id":"m04-el-ratchet","etiqueta":"Garantías › El ratchet","nivel":1},"1:75":{"id":"m04-el-limite-de-las-garantias","etiqueta":"Garantías › El límite de las garantías","nivel":1},"1:62":{"id":"m04","etiqueta":"Garantías","nivel":1},"1:77":{"id":"m05-el-criterio-es-el-de-tu-equipo","etiqueta":"Guardarraíles › El criterio es el de tu equipo","nivel":2},"1:78":{"id":"m05-tres-escalones","etiqueta":"Guardarraíles › Tres escalones","nivel":1},"1:79":{"id":"m05-las-rules-son-probabilisticas","etiqueta":"Guardarraíles › Las rules son probabilísticas","nivel":1},"1:80":{"id":"m05-dos-ficheros-de-rules-para-cuatro-herramientas","etiqueta":"Guardarraíles › Dos ficheros de rules para cuatro herramientas","nivel":2},"1:81":{"id":"m05-practica-5-el-mismo-prompt-con-guardarrailes-15-min-individual","etiqueta":"Guardarraíles › Práctica 5 · El mismo prompt con guardarraíles (15 min, individual)","nivel":2},"1:82":{"id":"m05-debate-10-min-en-este-orden","etiqueta":"Guardarraíles › Debate (10 min, en este orden)","nivel":3},"1:83":{"id":"m05-un-guardarrail-determinista-no-es-un-guardarrail-completo","etiqueta":"Guardarraíles › Un guardarraíl determinista no es un guardarraíl completo","nivel":1},"1:84":{"id":"m05-mapa-final-del-dia-1","etiqueta":"Guardarraíles › Mapa final del día 1","nivel":1},"1:85":{"id":"m05-el-limite-de-los-guardarrailes","etiqueta":"Guardarraíles › El límite de los guardarraíles","nivel":1},"1:86":{"id":"m05-el-limite-de-los-guardarrailes","etiqueta":"Guardarraíles › El límite de los guardarraíles","nivel":1},"1:76":{"id":"m05","etiqueta":"Guardarraíles","nivel":1},"2:2":{"id":"m06-resumen-del-dia-1","etiqueta":"El sistema: skills y workflow › Resumen del día 1","nivel":3},"2:3":{"id":"m06-resumen-del-dia-1","etiqueta":"El sistema: skills y workflow › Resumen del día 1","nivel":3},"2:4":{"id":"m06-resumen-del-dia-1","etiqueta":"El sistema: skills y workflow › Resumen del día 1","nivel":3},"2:6":{"id":"m06-que-es-una-skill","etiqueta":"El sistema: skills y workflow › Qué es una skill","nivel":1},"2:7":{"id":"m06-una-tecnica-de-contexto","etiqueta":"El sistema: skills y workflow › Una técnica de contexto","nivel":1},"2:8":{"id":"m06-un-ejemplo-revisar-un-pr","etiqueta":"El sistema: skills y workflow › Un ejemplo: revisar un PR","nivel":1},"2:10":{"id":"m06-como-se-adopta-invirtiendo-la-dependencia","etiqueta":"El sistema: skills y workflow › Cómo se adopta: invirtiendo la dependencia","nivel":2},"2:11":{"id":"m06-el-workflow-implement","etiqueta":"El sistema: skills y workflow › El workflow /implement","nivel":1},"2:12":{"id":"m06-practica-6-el-mismo-prompt-llevado-por-el-workflow-20-min-individual","etiqueta":"El sistema: skills y workflow › Práctica 6 · El mismo prompt, llevado por el workflow (20 min, individual)","nivel":2},"2:13":{"id":"m06-el-limite-del-sistema","etiqueta":"El sistema: skills y workflow › El límite del sistema","nivel":1},"2:14":{"id":"m06-el-limite-del-sistema","etiqueta":"El sistema: skills y workflow › El límite del sistema","nivel":1},"2:15":{"id":"m06-el-limite-del-sistema","etiqueta":"El sistema: skills y workflow › El límite del sistema","nivel":1},"2:1":{"id":"m06","etiqueta":"El sistema: skills y workflow","nivel":1},"2:5":{"id":"m06","etiqueta":"El sistema: skills y workflow","nivel":1},"2:9":{"id":"m06","etiqueta":"El sistema: skills y workflow","nivel":1},"2:17":{"id":"m07-la-condicion-de-parada","etiqueta":"Especificación › La condición de parada","nivel":1},"2:18":{"id":"m07-describir-no-es-especificar","etiqueta":"Especificación › Describir no es especificar","nivel":1},"2:19":{"id":"m07-las-cuatro-piezas-de-una-definicion-que-sirve","etiqueta":"Especificación › Las cuatro piezas de una definición que sirve","nivel":1},"2:20":{"id":"m07-de-revisar-el-plan-a-definir-la-tarea","etiqueta":"Especificación › De revisar el plan a definir la tarea","nivel":2},"2:21":{"id":"m07-la-especificacion-minima-solo-parece-barata","etiqueta":"Especificación › La especificación mínima solo parece barata","nivel":2},"2:22":{"id":"m07-cuanto-merece-cada-tipo-de-trabajo","etiqueta":"Especificación › Cuánto merece cada tipo de trabajo","nivel":2},"2:23":{"id":"m07-practica-7-especificar-en-vez-de-implementar-10-min-individual","etiqueta":"Especificación › Práctica 7 · Especificar en vez de implementar (10 min, individual)","nivel":2},"2:24":{"id":"m07-debate-7-min","etiqueta":"Especificación › Debate (7 min)","nivel":3},"2:25":{"id":"m07-sdd-la-especificacion-por-delante","etiqueta":"Especificación › SDD: la especificación por delante","nivel":2},"2:26":{"id":"m07-el-limite-de-la-especificacion","etiqueta":"Especificación › El límite de la especificación","nivel":1},"2:16":{"id":"m07","etiqueta":"Especificación","nivel":1},"2:28":{"id":"m08-el-cuello-de-botella-se-mueve-otra-vez","etiqueta":"Verificación › El cuello de botella se mueve otra vez","nivel":1},"2:29":{"id":"m08-el-cuello-de-botella-se-mueve-otra-vez","etiqueta":"Verificación › El cuello de botella se mueve otra vez","nivel":1},"2:30":{"id":"m08-tres-carriles","etiqueta":"Verificación › Tres carriles","nivel":1},"2:31":{"id":"m08-el-carril-se-decide-en-un-embudo","etiqueta":"Verificación › El carril se decide en un embudo","nivel":1},"2:32":{"id":"m08-practica-8-tres-reglas-20-min-individual-y-por-el-chat","etiqueta":"Verificación › Práctica 8 · Tres reglas (20 min, individual y por el chat)","nivel":2},"2:33":{"id":"m08-debate-10-min","etiqueta":"Verificación › Debate (10 min)","nivel":3},"2:34":{"id":"m08-pedirle-que-no-toque-los-tests-no-funciona","etiqueta":"Verificación › Pedirle que no toque los tests no funciona","nivel":1},"2:35":{"id":"m08-la-red-puede-crecer-sola-no-puede-encogerse-sin-que-nadie-lo-vea","etiqueta":"Verificación › La red puede crecer sola; no puede encogerse sin que nadie lo vea","nivel":1},"2:36":{"id":"m08-el-carril-verde-se-abre-con-evidencia-no-con-fe","etiqueta":"Verificación › El carril verde se abre con evidencia, no con fe","nivel":1},"2:37":{"id":"m08-el-limite-de-la-verificacion","etiqueta":"Verificación › El límite de la verificación","nivel":1},"2:27":{"id":"m08","etiqueta":"Verificación","nivel":1},"2:40":{"id":"m09-worktrees-un-agente-una-copia","etiqueta":"Después de delegar › Worktrees: un agente, una copia","nivel":2},"2:41":{"id":"m09-que-necesita-un-worktree-nuevo-para-arrancar","etiqueta":"Después de delegar › Qué necesita un worktree nuevo para arrancar","nivel":2},"2:42":{"id":"m09-los-contenedores-dos-formas-de-montarlos","etiqueta":"Después de delegar › Los contenedores: dos formas de montarlos","nivel":3},"2:43":{"id":"m09-aislar-la-ejecucion-no-evita-el-choque-al-integrar","etiqueta":"Después de delegar › Aislar la ejecución no evita el choque al integrar","nivel":2},"2:44":{"id":"m09-con-cinco-agentes-el-cuello-de-botella-eres-tu","etiqueta":"Después de delegar › Con cinco agentes, el cuello de botella eres tú","nivel":2},"2:45":{"id":"m09-lo-que-cuesta-estar-en-este-punto","etiqueta":"Después de delegar › Lo que cuesta estar en este punto","nivel":2},"2:47":{"id":"m09-mantenibilidad-a-largo-plazo-lo-que-el-codigo-no-explica","etiqueta":"Después de delegar › Mantenibilidad a largo plazo › Lo que el código no explica","nivel":2},"2:48":{"id":"m09-mantenibilidad-a-largo-plazo-cada-cambio-pasa-el-conjunto-empeora","etiqueta":"Después de delegar › Mantenibilidad a largo plazo › Cada cambio pasa; el conjunto empeora","nivel":2},"2:46":{"id":"m09-mantenibilidad-a-largo-plazo","etiqueta":"Después de delegar › Mantenibilidad a largo plazo","nivel":2},"2:49":{"id":"m09-el-limite","etiqueta":"Después de delegar › El límite","nivel":2},"2:38":{"id":"m09","etiqueta":"Después de delegar","nivel":2},"2:39":{"id":"m09","etiqueta":"Después de delegar","nivel":2},"2:52":{"id":"m10-diagnosticar-vsm-el-mapa-de-como-trabaja-el-equipo","etiqueta":"Llevarlo al equipo › Diagnosticar · VSM: el mapa de cómo trabaja el equipo","nivel":2},"2:53":{"id":"m10-diagnosticar-vsm-el-mapa-de-como-trabaja-el-equipo","etiqueta":"Llevarlo al equipo › Diagnosticar · VSM: el mapa de cómo trabaja el equipo","nivel":2},"2:54":{"id":"m10-diagnosticar-gauntlet-podrias-dejar-de-leer-el-codigo","etiqueta":"Llevarlo al equipo › Diagnosticar · Gauntlet: ¿podrías dejar de leer el código?","nivel":2},"2:55":{"id":"m10-diagnosticar-gauntlet-podrias-dejar-de-leer-el-codigo","etiqueta":"Llevarlo al equipo › Diagnosticar · Gauntlet: ¿podrías dejar de leer el código?","nivel":2},"2:56":{"id":"m10-compartir-que-es-tuyo-y-que-es-del-equipo","etiqueta":"Llevarlo al equipo › Compartir · Qué es tuyo y qué es del equipo","nivel":2},"2:57":{"id":"m10-compartir-agentic-toolbox","etiqueta":"Llevarlo al equipo › Compartir · agentic-toolbox","nivel":3},"2:58":{"id":"m10-mejorar-probar-cada-uno-converger-en-comun","etiqueta":"Llevarlo al equipo › Mejorar · Probar cada uno, converger en común","nivel":2},"2:59":{"id":"m10-mejorar-la-reunion-de-mejora-continua","etiqueta":"Llevarlo al equipo › Mejorar · La reunión de mejora continua","nivel":2},"2:60":{"id":"m10-si-no-leemos-el-codigo-que-miramos","etiqueta":"Llevarlo al equipo › Si no leemos el código, ¿qué miramos?","nivel":2},"2:61":{"id":"m10-la-curva-j","etiqueta":"Llevarlo al equipo › La curva J","nivel":2},"2:62":{"id":"m10-practica-9-donde-estais-y-que-atacariais-primero-7-min-todo-el-grupo","etiqueta":"Llevarlo al equipo › Práctica 9 · Dónde estáis y qué atacaríais primero (7 min, todo el grupo)","nivel":3},"2:50":{"id":"m10","etiqueta":"Llevarlo al equipo","nivel":2},"2:51":{"id":"m10","etiqueta":"Llevarlo al equipo","nivel":2},"2:65":{"id":"m11-no-hace-falta-que-montes-el-flujo-de-cero","etiqueta":"Otros temas › No hace falta que montes el flujo de cero","nivel":3},"2:66":{"id":"m11-ide-y-ade","etiqueta":"Otros temas › IDE y ADE","nivel":3},"2:67":{"id":"m11-bucles-que-corren-sin-nadie-delante","etiqueta":"Otros temas › Bucles que corren sin nadie delante","nivel":3},"2:68":{"id":"m11-mcp-solo-cuando-aporta-algo-que-la-cli-no-da","etiqueta":"Otros temas › MCP solo cuando aporta algo que la CLI no da","nivel":3},"2:69":{"id":"m11-mcp-solo-cuando-aporta-algo-que-la-cli-no-da","etiqueta":"Otros temas › MCP solo cuando aporta algo que la CLI no da","nivel":3},"2:70":{"id":"m11-tres-riesgos-reales","etiqueta":"Otros temas › Tres riesgos reales","nivel":3},"2:71":{"id":"m11-lo-que-esta-por-venir","etiqueta":"Otros temas › Lo que está por venir","nivel":3},"2:63":{"id":"m11","etiqueta":"Otros temas","nivel":3},"2:64":{"id":"m11","etiqueta":"Otros temas","nivel":3},"2:73":{"id":"m12-la-escala-de-uso","etiqueta":"Cierre: la escala de uso › La escala de uso","nivel":1},"2:74":{"id":"m12-la-escala-de-uso","etiqueta":"Cierre: la escala de uso › La escala de uso","nivel":1},"2:75":{"id":"m12-la-escala-de-uso","etiqueta":"Cierre: la escala de uso › La escala de uso","nivel":1},"2:76":{"id":"m12-la-escala-de-uso","etiqueta":"Cierre: la escala de uso › La escala de uso","nivel":1},"2:77":{"id":"m12-antes-y-despues","etiqueta":"Cierre: la escala de uso › Antes y después","nivel":3},"2:79":{"id":"m12-recursos","etiqueta":"Cierre: la escala de uso › Recursos","nivel":3},"2:80":{"id":"m12-recursos","etiqueta":"Cierre: la escala de uso › Recursos","nivel":3},"2:72":{"id":"m12","etiqueta":"Cierre: la escala de uso","nivel":1},"2:78":{"id":"m12","etiqueta":"Cierre: la escala de uso","nivel":1}},"videos":[{"numero":"00","titulo":"La tesis: pedir no es delegar","fichero":"00-la-tesis.mp4","nivel":1},{"numero":"01","titulo":"Vibecoding","fichero":"01-vibecoding.mp4","nivel":2},{"numero":"02","titulo":"Contexto","fichero":"02-contexto.mp4","nivel":1},{"numero":"03","titulo":"RPI: Research, Plan, Implement","fichero":"03-rpi.mp4","nivel":1},{"numero":"04","titulo":"Garantías","fichero":"04-garantias.mp4","nivel":1},{"numero":"05","titulo":"Guardarraíles","fichero":"05-guardarrailes.mp4","nivel":1},{"numero":"06","titulo":"El sistema: skills y workflow","fichero":"06-skills-y-workflow.mp4","nivel":1},{"numero":"07","titulo":"Especificación","fichero":"07-especificacion.mp4","nivel":1},{"numero":"08","titulo":"Verificación","fichero":"08-verificacion.mp4","nivel":1},{"numero":"09","titulo":"Después de delegar","fichero":"09-despues-de-delegar.mp4","nivel":2},{"numero":"10","titulo":"Llevarlo al equipo","fichero":"10-llevarlo-al-equipo.mp4","nivel":2},{"numero":"11","titulo":"Otros temas","fichero":"11-otros-temas.mp4","nivel":3},{"numero":"12","titulo":"Cierre: la escala de uso","fichero":"12-cierre.mp4","nivel":1}]};
 // ---------- utilidades ----------
 const $ = (s, r = document) => r.querySelector(s)
 const $$ = (s, r = document) => [...r.querySelectorAll(s)]
@@ -1596,9 +1624,12 @@ function ponerRuta(n) {
   $('#resumen-ruta').innerHTML = `<b>Ruta ${r.nombre.toLowerCase()}</b>${r.lema}.<br><small>${r.modulos} módulos · ${r.secciones} secciones · ${r.duracion}</small>`
   aplicarEdicion()
 }
-DATOS.rutas.forEach((r) => cajaRutas.append(h('button', { 'data-n': r.n, title: `${r.lema} (${r.duracion})`, onclick: () => ponerRuta(r.n) }, r.nombre)))
+DATOS.rutas.forEach((r) => cajaRutas.append(h('button', { 'data-n': r.n, title: `${r.lema} (${r.duracion})`, onclick: () => { ponerRuta(r.n); if (r.n === 4) ponerVista('vivo') } }, r.nombre)))
 
-const visible = (el) => Number(el.dataset.nivel) <= Number(document.body.dataset.ruta) && !el.closest('.quitado')
+const enRuta = (el, ruta = Number(document.body.dataset.ruta)) => (ruta === 4 ? el.dataset.agente !== undefined : Number(el.dataset.nivel) <= ruta)
+const visible = (el) => enRuta(el) && !el.closest('.quitado')
+// La ruta más corta en la que se ve un elemento, para saltar a él desde otra vista
+const mostrarEnRuta = (el) => { if (!enRuta(el)) ponerRuta(Number(el.dataset.nivel)) }
 const tituloDe = (el) => { const t = el.querySelector('h1,h2,h3').cloneNode(true); $$('.marca,.dia,.refs,.quitar', t).forEach((x) => x.remove()); return t.textContent.trim() }
 
 function pintarIndice() {
@@ -1629,11 +1660,12 @@ function aplicarEdicion() {
   $$('.quitar[data-clave]').forEach((b) => {
     const fuera = Boolean(quitados[b.dataset.clave])
     b.textContent = fuera ? 'Restaurar' : 'Quitar'
-    b.closest('.ejercicio,.modulo,.seccion,.sub,.panel-video').classList.toggle('quitado', fuera)
+    b.closest('.ejercicio,.modulo,.seccion,.sub,.panel-video,.ejemplo-vivo').classList.toggle('quitado', fuera)
   })
   // renumerar según la secuencia que queda (ruta elegida, menos lo quitado)
   $$('.ejercicio').filter(visible).forEach((e, i) => ($('.n-ej', e).textContent = i + 1))
   $$('.modulo').filter(visible).forEach((m, i) => ($('.n-mod', m).textContent = pad(i + 1)))
+  $$('.ejemplo-vivo').filter(visible).forEach((e, i) => ($('.n-vivo', e).textContent = i + 1))
   $$('details.video').forEach((d) => (d.hidden = Boolean(quitados[`v${d.dataset.video}`])))
   const vivas = { 1: diasVivas(1), 2: diasVivas(2) }
   $$('.dia').forEach((chip) => {
@@ -1690,7 +1722,7 @@ document.addEventListener('click', (e) => {
   const lab = e.target.closest('.ir-lab')
   if (lab) { pase.hidden = true; memoria.guardar('kt540.lab.ultima', lab.dataset.lab); ponerVista('lab'); $(`.lab-menu button[data-id="${lab.dataset.lab}"]`)?.click() }
   const guia = e.target.closest('.ir-guia')
-  if (guia) { pase.hidden = true; const destino = document.getElementById(guia.dataset.guia); const nivel = Number(destino.dataset.nivel); if (nivel > Number(document.body.dataset.ruta)) ponerRuta(nivel); ponerVista('guia'); setTimeout(() => destino.scrollIntoView(), 30) }
+  if (guia) { pase.hidden = true; const destino = document.getElementById(guia.dataset.guia); mostrarEnRuta(destino); ponerVista('guia'); setTimeout(() => destino.scrollIntoView(), 30) }
 })
 
 // ---------- vistas ----------
@@ -1701,6 +1733,7 @@ function ponerVista(nombre) {
   if (nombre === 'diapos' && !$('#vista-diapos').childElementCount) pintarDiapositivas()
   if (nombre === 'videos' && !$('#vista-videos').childElementCount) pintarVideos()
   if (nombre === 'lab' && window.iniciarLab) window.iniciarLab()
+  if (nombre === 'vivo' && window.iniciarVivo) window.iniciarVivo()
   window.scrollTo(0, 0)
 }
 $$('.vistas button').forEach((b) => b.addEventListener('click', () => ponerVista(b.dataset.vista)))
@@ -1747,7 +1780,8 @@ function abrirVisor(d, n) {
 }
 function irA(info) {
   visor.hidden = true
-  if (info.nivel > Number(document.body.dataset.ruta)) ponerRuta(info.nivel)
+  const destino = document.getElementById(info.id)
+  if (destino) mostrarEnRuta(destino)
   ponerVista('guia')
   setTimeout(() => document.getElementById(info.id)?.scrollIntoView(), 30)
 }
@@ -1836,7 +1870,7 @@ document.addEventListener('keydown', (e) => {
   }
   if (e.key === 'p' || e.key === 'P') presentar()
   if (e.key === 'e' || e.key === 'E') ponerEdicion(!document.body.classList.contains('editando'))
-  if (['1', '2', '3'].includes(e.key)) ponerRuta(Number(e.key))
+  if (['1', '2', '3', '4'].includes(e.key)) ponerRuta(Number(e.key))
 })
 
 ponerRuta(memoria.leer('kt540.ruta', 1))
@@ -2234,6 +2268,209 @@ window.iniciarLab = function () {
   const campoQuien = h('input', { type: 'text', value: quien(), placeholder: 'Tu nombre', style: 'max-width:240px', oninput: (ev) => memoria.guardar(`${CLAVE}.quien`, ev.target.value) })
   vista.append(h('h1', {}, 'Laboratorio'), h('p', {}, 'Haz los ejemplos, guarda cada intento y compáralos. Los datos se quedan en este navegador. En una sesión en línea: escribe tu nombre, guarda tus intentos, pulsa Exportar y envía el fichero por el chat; quien facilita pulsa Importar con el de cada persona y compara los de todos con la pantalla compartida.'), h('label', { class: 'campo', style: 'margin-bottom:16px' }, 'Tu nombre (se antepone a cada intento que guardes)', campoQuien), h('div', { class: 'lab' }, menu, caja))
   abrir(HERRAMIENTAS.find((x) => x.id === memoria.leer(`${CLAVE}.ultima`, 'cuaderno')) ?? HERRAMIENTAS[0])
+}
+
+
+// =====================================================================
+// EN VIVO: el mismo prompt, dos veces, con Claude Code de verdad.
+// Necesita el servidor local (node servidor.mjs): desde file:// solo explica cómo arrancarlo.
+// =====================================================================
+const CLAVE_VIVO = 'kt540.vivo'
+let corridas = memoria.leer(CLAVE_VIVO, {})
+const guardarCorridas = () => memoria.guardar(CLAVE_VIVO, corridas)
+const corto = (texto, n = 1500) => { const t = String(texto ?? ''); return t.length > n ? `${t.slice(0, n)}\n… (${t.length - n} caracteres más)` : t }
+const textoDe = (contenido) => (Array.isArray(contenido) ? contenido.map((c) => c.text ?? '').join('\n') : String(contenido ?? ''))
+
+function resumirHerramienta(nombre, entrada, dir) {
+  const ruta = (r) => String(r ?? '').replaceAll(`/private${dir}/`, '').replaceAll(`${dir}/`, '').replaceAll(dir, '.')
+  if (nombre === 'Bash') return ruta(entrada.command)
+  if (['Read', 'Edit', 'Write', 'MultiEdit', 'NotebookEdit'].includes(nombre)) return ruta(entrada.file_path)
+  if (nombre === 'Skill') return entrada.skill ?? entrada.command ?? ''
+  if (nombre === 'Grep' || nombre === 'Glob') return `${entrada.pattern ?? ''}${entrada.path ? ` en ${ruta(entrada.path)}` : ''}`
+  if (nombre === 'Task' || nombre === 'Agent') return `${entrada.subagent_type ?? 'subagente'}: ${entrada.description ?? ''}`
+  return ruta(JSON.stringify(entrada)).slice(0, 160)
+}
+
+// Convierte un evento del flujo de Claude Code en entradas compactas del registro.
+function entradasDe(evento, corrida) {
+  const dir = corrida.dir
+  if (evento.type === 'system' && evento.subtype === 'init') {
+    const propias = (evento.skills ?? []).filter((s) => ['revisar-pr', 'carta-pokemon', 'implementar'].includes(s))
+    return [{ t: 'inicio', texto: `Arranca ${evento.model}. Skills del proyecto a la vista: ${propias.join(', ') || 'ninguna'}.` }]
+  }
+  if (evento.type === 'system' && evento.subtype === 'hook_response') {
+    const paro = evento.exit_code !== 0
+    if (paro) corrida.metricas.paradas++
+    return [{ t: paro ? 'paro' : 'hook', texto: paro ? `El hook ${evento.hook_event} lo detiene (código ${evento.exit_code})` : `Hook ${evento.hook_event}: pasa`, detalle: paro ? corto(evento.stderr || evento.output || evento.stdout, 1200) : '' }]
+  }
+  if (evento.type === 'system' && evento.subtype === 'permission_denied') return [{ t: 'error', texto: `Permiso denegado a ${evento.tool_name}: ese comando no está en la lista de lo permitido.` }]
+  if (evento.type === 'assistant') {
+    return (evento.message?.content ?? []).flatMap((c) => {
+      if (c.type === 'text' && c.text.trim()) return [{ t: 'texto', texto: c.text.trim() }]
+      if (c.type !== 'tool_use') return []
+      const resumen = resumirHerramienta(c.name, c.input ?? {}, dir)
+      corrida.metricas.herramientas++
+      if (c.name === 'Read') corrida.metricas.leidos.push(resumen)
+      if (['Edit', 'Write', 'MultiEdit'].includes(c.name)) corrida.metricas.escritos.push(resumen)
+      if (c.name === 'Skill') corrida.metricas.skills.push(resumen)
+      return [{ t: 'herr', nombre: c.name, texto: resumen }]
+    })
+  }
+  if (evento.type === 'user') {
+    return (Array.isArray(evento.message?.content) ? evento.message.content : []).filter((c) => c.type === 'tool_result').map((c) => ({ t: c.is_error ? 'error' : 'res', texto: corto(textoDe(c.content).replaceAll(`${dir}/`, ''), 1200) }))
+  }
+  if (evento.type === 'result') {
+    Object.assign(corrida.metricas, { turnos: evento.num_turns, segundos: Math.round((evento.duration_ms ?? 0) / 1000), coste: evento.total_cost_usd, salida: evento.usage?.output_tokens, denegados: (evento.permission_denials ?? []).length })
+    corrida.respuesta = String(evento.result ?? '')
+    return evento.is_error ? [{ t: 'error', texto: corto(evento.result ?? evento.subtype) }] : []
+  }
+  return []
+}
+
+const ICONO = { inicio: '●', texto: '💬', herr: '🔧', res: '↩', error: '✘', hook: '✓', paro: '⛔', aviso: '⚠' }
+function nodoEntrada(e) {
+  if (e.t === 'res' || e.t === 'error') return h('details', { class: `ev ${e.t}` }, h('summary', {}, `${ICONO[e.t]} ${e.t === 'error' ? 'Error o denegado' : 'Resultado'} · ${e.texto.split('\n')[0].slice(0, 90)}`), h('pre', {}, e.texto))
+  if (e.t === 'herr') return h('div', { class: 'ev herr' }, `${ICONO.herr} `, h('b', {}, e.nombre), ' ', h('code', {}, e.texto))
+  if (e.t === 'paro') return h('div', { class: 'ev paro' }, `${ICONO.paro} ${e.texto}`, e.detalle ? h('pre', {}, e.detalle) : null)
+  return h('div', { class: `ev ${e.t}` }, `${ICONO[e.t] ?? ''} ${e.texto}`)
+}
+
+function pintarColumna(caja, ejemplo, variante) {
+  const clave = `${ejemplo.id}:${variante.id}`
+  const corrida = corridas[clave]
+  const boton = h('button', { class: 'primario', 'data-ejecutar': clave }, corrida ? '↻ Repetir' : '▶ Ejecutar')
+  const registro = h('div', { class: 'registro' })
+  const resultado = h('div', { class: 'resultado-vivo' })
+  caja.replaceChildren(...[
+    h('div', { class: 'col-cabecera' }, h('h3', {}, variante.nombre), boton),
+    h('p', { class: 'rodea' }, variante.rodea),
+    variante.prompt !== ejemplo.prompt ? h('p', { class: 'ayuda' }, 'Prompt de esta columna: ', h('code', {}, variante.prompt)) : null,
+    registro, resultado].filter(Boolean))
+  if (!corrida) { registro.append(h('p', { class: 'ayuda' }, 'Todavía sin ejecutar.')); return { boton, registro, resultado } }
+  corrida.registro.forEach((e) => registro.append(nodoEntrada(e)))
+  pintarResultado(resultado, corrida)
+  return { boton, registro, resultado }
+}
+
+function pintarResultado(caja, corrida) {
+  const m = corrida.metricas
+  caja.replaceChildren()
+  if (corrida.respuesta) caja.append(h('h4', {}, 'Respuesta final'), h('pre', { class: 'respuesta' }, corrida.respuesta))
+  for (const f of corrida.ficheros ?? []) caja.append(h('h4', {}, `Lo que dejó en ${f.ruta}`), f.contenido == null ? h('p', { class: 'ayuda' }, 'No creó ese fichero.') : h('pre', { class: 'fichero' }, f.contenido))
+  if (corrida.comprobaciones?.length) {
+    caja.append(h('h4', {}, 'Comprobaciones (las lanza el servidor, no el agente)'))
+    for (const c of corrida.comprobaciones) caja.append(h('details', { class: 'comprobacion' }, h('summary', {}, h('span', { class: `pastilla ${c.bien ? 'verde' : 'roja'}` }, c.bien ? '✔' : '✘'), ` ${c.nombre}`), c.cmd ? h('p', { class: 'ayuda' }, h('code', {}, c.cmd)) : null, h('pre', {}, c.detalle)))
+  }
+  if (corrida.cambios?.ficheros) caja.append(h('details', {}, h('summary', {}, `Ficheros que cambió (${corrida.cambios.ficheros.split('\n').length})`), h('pre', {}, corrida.cambios.ficheros), h('pre', { class: 'diff' }, corrida.cambios.diff)))
+  if (corrida.fin) caja.append(h('p', { class: 'ayuda' }, `${m.turnos ?? '–'} turnos · ${m.herramientas} herramientas · ${m.segundos ?? '–'} s · ${m.salida ?? '–'} tokens de salida · ${m.coste != null ? `${m.coste.toFixed(2)} $ a precio de API` : ''} · ${corrida.modelo}`))
+}
+
+function filasComparacion(ejemplo) {
+  const [a, b] = ejemplo.variantes.map((v) => corridas[`${ejemplo.id}:${v.id}`])
+  if (!a?.fin || !b?.fin) return null
+  const fila = (nombre, f) => [nombre, f(a), f(b)]
+  const filas = [
+    fila('Ficheros que leyó', (c) => String(new Set(c.metricas.leidos).size)),
+    fila('Ficheros que escribió', (c) => String(new Set(c.metricas.escritos).size)),
+    fila('Skills que cargó', (c) => c.metricas.skills.join(', ') || '—'),
+    fila('Veces que lo paró un hook', (c) => String(c.metricas.paradas)),
+    fila('Herramientas usadas', (c) => String(c.metricas.herramientas)),
+    fila('Turnos', (c) => String(c.metricas.turnos ?? '—')),
+    fila('Duración', (c) => `${c.metricas.segundos ?? '—'} s`),
+  ]
+  ejemplo.comprobaciones.forEach((nombre) => filas.push(fila(nombre, (c) => { const r = c.comprobaciones.find((x) => x.nombre === nombre); return r ? (r.bien ? '✔ sí' : '✘ no') : '—' })))
+  return filas
+}
+function pintarComparacion(caja, ejemplo) {
+  const filas = filasComparacion(ejemplo)
+  if (!filas) { caja.replaceChildren(h('p', { class: 'ayuda' }, 'Ejecuta las dos columnas para ver la comparación.')); return }
+  caja.innerHTML = `<div class="tabla comparacion"><table><thead><tr><th></th>${ejemplo.variantes.map((v) => `<th>${v.nombre}</th>`).join('')}</tr></thead><tbody>${filas.map(([n, x, y]) => `<tr><th>${n}</th><td class="${x !== y ? 'distinto' : ''}">${x}</td><td class="${x !== y ? 'distinto' : ''}">${y}</td></tr>`).join('')}</tbody></table></div>`
+}
+
+async function lanzar(ejemplo, variante, refs, alTerminar) {
+  const clave = `${ejemplo.id}:${variante.id}`
+  const corrida = { fecha: Date.now(), registro: [], comprobaciones: [], ficheros: [], metricas: { herramientas: 0, paradas: 0, leidos: [], escritos: [], skills: [] }, dir: '', respuesta: '' }
+  const anotar = (e) => { corrida.registro.push(e); refs.registro.append(nodoEntrada(e)); refs.registro.scrollTop = refs.registro.scrollHeight }
+  refs.boton.disabled = true
+  refs.boton.textContent = '… en marcha'
+  refs.registro.replaceChildren()
+  refs.resultado.replaceChildren()
+  try {
+    const respuesta = await fetch(`/api/ejecutar?ejemplo=${ejemplo.id}&variante=${variante.id}`, { method: 'POST' })
+    if (!respuesta.ok) throw new Error(await respuesta.text())
+    const lector = respuesta.body.getReader()
+    const decodificador = new TextDecoder()
+    let resto = ''
+    for (;;) {
+      const { done, value } = await lector.read()
+      if (done) break
+      const partes = (resto + decodificador.decode(value, { stream: true })).split('\n\n')
+      resto = partes.pop()
+      for (const parte of partes) {
+        if (!parte.startsWith('data: ')) continue
+        const dato = JSON.parse(parte.slice(6))
+        if (dato.tipo === 'preparado') { corrida.dir = dato.dir; corrida.modelo = dato.modelo; anotar({ t: 'inicio', texto: `Copia limpia del proyecto${dato.quitar.length ? `, sin: ${dato.quitar.join(', ')}` : ', con todo'}.` }) }
+        if (dato.tipo === 'evento') entradasDe(dato.evento, corrida).forEach(anotar)
+        if (dato.tipo === 'aviso') anotar({ t: 'aviso', texto: dato.texto })
+        if (dato.tipo === 'cambios') corrida.cambios = { ficheros: dato.ficheros, diff: dato.diff }
+        if (dato.tipo === 'fichero') corrida.ficheros.push({ ruta: dato.ruta, contenido: dato.contenido })
+        if (dato.tipo === 'comprobacion') corrida.comprobaciones.push(dato)
+        if (dato.tipo === 'fin') corrida.fin = true
+      }
+    }
+  } catch (error) {
+    anotar({ t: 'aviso', texto: `No se pudo ejecutar: ${error.message}` })
+  }
+  delete corrida.dir
+  if (corrida.cambios) corrida.cambios.diff = corto(corrida.cambios.diff, 12000)
+  corridas[clave] = corrida
+  guardarCorridas() || anotar({ t: 'aviso', texto: 'No se pudo guardar el resultado en este navegador.' })
+  pintarResultado(refs.resultado, corrida)
+  refs.boton.disabled = false
+  refs.boton.textContent = '↻ Repetir'
+  alTerminar()
+}
+
+function pintarEjemplo(ejemplo, i) {
+  const columnas = ejemplo.variantes.map(() => h('div', { class: 'col-vivo' }))
+  const comparacion = h('div', {})
+  const refs = ejemplo.variantes.map((v, k) => pintarColumna(columnas[k], ejemplo, v))
+  const alTerminar = () => pintarComparacion(comparacion, ejemplo)
+  const correr = (k) => lanzar(ejemplo, ejemplo.variantes[k], refs[k], alTerminar)
+  refs.forEach((r, k) => (r.boton.onclick = () => correr(k)))
+  alTerminar()
+  return h('article', { class: 'ejemplo-vivo', 'data-nivel': 1, 'data-agente': '', id: `vivo-${ejemplo.id}` },
+    h('header', {}, h('p', { class: 'num' }, 'Ejemplo ', h('span', { class: 'n-vivo' }, String(i + 1)), ` · ${ejemplo.tema}`), h('h2', {}, ejemplo.titulo), h('button', { class: 'quitar', 'data-clave': `vivo-${ejemplo.id}` })),
+    h('p', { class: 'lema' }, ejemplo.idea),
+    h('figure', { class: 'codigo' }, h('figcaption', {}, 'el mismo prompt en las dos columnas', h('button', { class: 'copiar' }, 'Copiar')), h('pre', {}, h('code', {}, ejemplo.prompt))),
+    h('p', {}, h('strong', {}, 'En qué fijarte: '), ejemplo.mira),
+    h('div', { class: 'fila-botones' }, h('button', { class: 'primario', onclick: () => { correr(0); correr(1) } }, '▶▶ Ejecutar las dos a la vez'), ejemplo.guia ? h('button', { class: 'ir-guia', 'data-guia': ejemplo.guia }, 'La explicación, en la guía') : null),
+    h('div', { class: 'dos-columnas' }, columnas),
+    h('h3', {}, 'Comparación'), comparacion)
+}
+
+window.iniciarVivo = async function () {
+  const vista = $('#vista-vivo')
+  if (vista.childElementCount) return
+  vista.append(h('h1', {}, 'En vivo'), h('p', { class: 'lema' }, 'El mismo prompt, lanzado dos veces con Claude Code de verdad: una sin la pieza y otra con ella. Ves cada fichero que lee, cada comando y cada parada, y al final el resultado y las comprobaciones de las dos, lado a lado.'))
+  let estado = null
+  try { if (location.protocol.startsWith('http')) estado = await (await fetch('/api/estado')).json() } catch { /* sin servidor */ }
+  if (!estado) {
+    vista.append(h('div', { class: 'panel' }, h('h3', {}, 'Para ejecutar los ejemplos hay que arrancar el servidor local'),
+      h('p', {}, 'Esta página está abierta como fichero y desde ahí no puede lanzar nada. En la carpeta del repositorio:'),
+      h('figure', { class: 'codigo' }, h('figcaption', {}, 'bash', h('button', { class: 'copiar' }, 'Copiar')), h('pre', {}, h('code', {}, 'node servidor.mjs'))),
+      h('p', {}, 'y abre ', h('a', { href: 'http://localhost:5400' }, 'http://localhost:5400'), '. Necesitas Node 20 o superior, git y Claude Code instalado con tu sesión iniciada (', h('code', {}, 'claude'), ' en la terminal). Los ejemplos usan tu suscripción y el modelo Opus 5.5.')))
+    return
+  }
+  vista.append(h('div', { class: `panel ${estado.claude ? '' : 'sin-claude'}` },
+    estado.claude ? h('p', {}, h('span', { class: 'pastilla verde' }, 'Listo'), ` Claude Code ${estado.claude} · modelo `, h('code', {}, estado.modelo), '. Cada ejecución consume de tu suscripción y tarda entre medio minuto y unos minutos.')
+      : h('p', {}, h('span', { class: 'pastilla roja' }, 'Falta Claude Code'), ' El servidor no encuentra el comando ', h('code', {}, 'claude'), '. Instálalo, inicia sesión y vuelve a arrancar el servidor.'),
+    h('p', { class: 'ayuda' }, 'Cada columna trabaja sobre una copia temporal y limpia del proyecto demo, así que no toca tu repositorio. El agente puede leer, editar y lanzar los comandos del proyecto; lo demás se deniega y se ve en el registro. Los resultados se guardan en este navegador.'),
+    h('div', { class: 'fila-botones' },
+      h('button', { onclick: () => h('a', { href: URL.createObjectURL(new Blob([JSON.stringify(corridas, null, 2)], { type: 'application/json' })), download: 'en-vivo-540.json' }).click() }, 'Exportar resultados'),
+      h('button', { onclick: () => { if (confirm('¿Borrar todos los resultados guardados de En vivo?')) { corridas = {}; guardarCorridas(); vista.replaceChildren(); window.iniciarVivo() } } }, 'Borrar resultados'))))
+  estado.ejemplos.forEach((ejemplo, i) => vista.append(pintarEjemplo(ejemplo, i)))
+  aplicarEdicion()
 }
 
 </script>

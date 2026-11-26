@@ -29,9 +29,12 @@ function ponerRuta(n) {
   $('#resumen-ruta').innerHTML = `<b>Ruta ${r.nombre.toLowerCase()}</b>${r.lema}.<br><small>${r.modulos} módulos · ${r.secciones} secciones · ${r.duracion}</small>`
   aplicarEdicion()
 }
-DATOS.rutas.forEach((r) => cajaRutas.append(h('button', { 'data-n': r.n, title: `${r.lema} (${r.duracion})`, onclick: () => ponerRuta(r.n) }, r.nombre)))
+DATOS.rutas.forEach((r) => cajaRutas.append(h('button', { 'data-n': r.n, title: `${r.lema} (${r.duracion})`, onclick: () => { ponerRuta(r.n); if (r.n === 4) ponerVista('vivo') } }, r.nombre)))
 
-const visible = (el) => Number(el.dataset.nivel) <= Number(document.body.dataset.ruta) && !el.closest('.quitado')
+const enRuta = (el, ruta = Number(document.body.dataset.ruta)) => (ruta === 4 ? el.dataset.agente !== undefined : Number(el.dataset.nivel) <= ruta)
+const visible = (el) => enRuta(el) && !el.closest('.quitado')
+// La ruta más corta en la que se ve un elemento, para saltar a él desde otra vista
+const mostrarEnRuta = (el) => { if (!enRuta(el)) ponerRuta(Number(el.dataset.nivel)) }
 const tituloDe = (el) => { const t = el.querySelector('h1,h2,h3').cloneNode(true); $$('.marca,.dia,.refs,.quitar', t).forEach((x) => x.remove()); return t.textContent.trim() }
 
 function pintarIndice() {
@@ -62,11 +65,12 @@ function aplicarEdicion() {
   $$('.quitar[data-clave]').forEach((b) => {
     const fuera = Boolean(quitados[b.dataset.clave])
     b.textContent = fuera ? 'Restaurar' : 'Quitar'
-    b.closest('.ejercicio,.modulo,.seccion,.sub,.panel-video').classList.toggle('quitado', fuera)
+    b.closest('.ejercicio,.modulo,.seccion,.sub,.panel-video,.ejemplo-vivo').classList.toggle('quitado', fuera)
   })
   // renumerar según la secuencia que queda (ruta elegida, menos lo quitado)
   $$('.ejercicio').filter(visible).forEach((e, i) => ($('.n-ej', e).textContent = i + 1))
   $$('.modulo').filter(visible).forEach((m, i) => ($('.n-mod', m).textContent = pad(i + 1)))
+  $$('.ejemplo-vivo').filter(visible).forEach((e, i) => ($('.n-vivo', e).textContent = i + 1))
   $$('details.video').forEach((d) => (d.hidden = Boolean(quitados[`v${d.dataset.video}`])))
   const vivas = { 1: diasVivas(1), 2: diasVivas(2) }
   $$('.dia').forEach((chip) => {
@@ -123,7 +127,7 @@ document.addEventListener('click', (e) => {
   const lab = e.target.closest('.ir-lab')
   if (lab) { pase.hidden = true; memoria.guardar('kt540.lab.ultima', lab.dataset.lab); ponerVista('lab'); $(`.lab-menu button[data-id="${lab.dataset.lab}"]`)?.click() }
   const guia = e.target.closest('.ir-guia')
-  if (guia) { pase.hidden = true; const destino = document.getElementById(guia.dataset.guia); const nivel = Number(destino.dataset.nivel); if (nivel > Number(document.body.dataset.ruta)) ponerRuta(nivel); ponerVista('guia'); setTimeout(() => destino.scrollIntoView(), 30) }
+  if (guia) { pase.hidden = true; const destino = document.getElementById(guia.dataset.guia); mostrarEnRuta(destino); ponerVista('guia'); setTimeout(() => destino.scrollIntoView(), 30) }
 })
 
 // ---------- vistas ----------
@@ -134,6 +138,7 @@ function ponerVista(nombre) {
   if (nombre === 'diapos' && !$('#vista-diapos').childElementCount) pintarDiapositivas()
   if (nombre === 'videos' && !$('#vista-videos').childElementCount) pintarVideos()
   if (nombre === 'lab' && window.iniciarLab) window.iniciarLab()
+  if (nombre === 'vivo' && window.iniciarVivo) window.iniciarVivo()
   window.scrollTo(0, 0)
 }
 $$('.vistas button').forEach((b) => b.addEventListener('click', () => ponerVista(b.dataset.vista)))
@@ -180,7 +185,8 @@ function abrirVisor(d, n) {
 }
 function irA(info) {
   visor.hidden = true
-  if (info.nivel > Number(document.body.dataset.ruta)) ponerRuta(info.nivel)
+  const destino = document.getElementById(info.id)
+  if (destino) mostrarEnRuta(destino)
   ponerVista('guia')
   setTimeout(() => document.getElementById(info.id)?.scrollIntoView(), 30)
 }
@@ -269,7 +275,7 @@ document.addEventListener('keydown', (e) => {
   }
   if (e.key === 'p' || e.key === 'P') presentar()
   if (e.key === 'e' || e.key === 'E') ponerEdicion(!document.body.classList.contains('editando'))
-  if (['1', '2', '3'].includes(e.key)) ponerRuta(Number(e.key))
+  if (['1', '2', '3', '4'].includes(e.key)) ponerRuta(Number(e.key))
 })
 
 ponerRuta(memoria.leer('kt540.ruta', 1))

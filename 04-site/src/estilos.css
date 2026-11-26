@@ -40,10 +40,11 @@ body:not([data-vista="guia"]) .cuerpo{grid-template-columns:minmax(0,1fr)}
 #toc a.mod{color:var(--tinta); font-weight:600; margin-top:10px}
 main{padding:26px clamp(16px,4vw,48px) 120px; min-width:0}
 .vista{max-width:900px}
-#vista-lab,#vista-diapos{max-width:none}
+#vista-lab,#vista-diapos,#vista-vivo{max-width:none}
 
 /* filtro de rutas */
 body[data-ruta="1"] [data-nivel="2"], body[data-ruta="1"] [data-nivel="3"], body[data-ruta="2"] [data-nivel="3"]{display:none}
+body[data-ruta="4"] [data-nivel]:not([data-agente]){display:none}
 
 .modulo{background:var(--papel); border:1px solid var(--linea); border-radius:14px; padding:26px clamp(16px,3vw,36px); margin-bottom:26px}
 .modulo .num{margin:0; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--suave)}
@@ -86,6 +87,31 @@ body.editando .rejilla button.quitado::after{content:"Restaurar"}
 #barra-edicion{position:fixed; left:0; right:0; bottom:0; z-index:30; display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:10px 18px; background:var(--aviso-suave); border-top:2px solid var(--aviso)}
 #barra-edicion span{margin-right:auto; font-weight:600}
 #pase .quitar{display:none}
+
+/* en vivo */
+.ejemplo-vivo{background:var(--papel); border:1px solid var(--linea); border-radius:14px; padding:22px clamp(16px,3vw,32px); margin-bottom:26px}
+.ejemplo-vivo .num{margin:0; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--suave)}
+.ejemplo-vivo h2{border:0; padding:0; margin:.1em 0 .4em}
+.ejemplo-vivo>figure pre{white-space:pre-wrap; overflow-wrap:anywhere}
+.dos-columnas{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:16px}
+.col-vivo{border:1px solid var(--linea); border-radius:12px; padding:14px; min-width:0; background:var(--fondo)}
+.col-cabecera{display:flex; justify-content:space-between; align-items:center; gap:8px}
+.col-cabecera h3{margin:0}
+.rodea{margin:.4em 0 .8em; font-size:14px; color:var(--suave)}
+.registro{max-height:420px; overflow:auto; border:1px solid var(--linea); border-radius:8px; background:var(--papel); padding:8px 10px; font-size:13px}
+.ev{padding:3px 0; overflow-wrap:anywhere}
+.ev.texto{white-space:pre-wrap; padding:6px 0}
+.ev.herr code{font-size:12px}
+.ev.res summary,.ev.error summary,.ev.hook,.ev.inicio{color:var(--suave)}
+.ev.error summary,.ev.aviso{color:var(--rojo)}
+.ev.paro{background:var(--rojo-suave); color:var(--rojo); border-radius:6px; padding:6px 8px; margin:4px 0; font-weight:600}
+.ev pre,.resultado-vivo pre{white-space:pre-wrap; overflow-wrap:anywhere; background:var(--codigo); border-radius:6px; padding:8px 10px; margin:4px 0; font-size:12px; font-weight:400; color:var(--tinta); max-height:320px; overflow:auto}
+.resultado-vivo h4{margin:14px 0 4px; font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--suave)}
+.resultado-vivo pre.respuesta,.resultado-vivo pre.fichero{font-size:13px; border:1px solid var(--linea)}
+.comprobacion summary{cursor:pointer; padding:3px 0}
+.sin-claude{border-color:var(--rojo)}
+button:disabled{opacity:.6; cursor:progress}
+@media (max-width:900px){.dos-columnas{grid-template-columns:1fr}}
 
 /* taller */
 .ejercicio{background:var(--papel); border:1px solid var(--linea); border-radius:14px; padding:22px clamp(16px,3vw,32px); margin-bottom:22px}

@@ -23,8 +23,12 @@ const RUTAS = [
   { n: 1, id: 'resumida', nombre: 'Resumida', lema: 'Solo los grandes temas de desarrollo', duracion: '100 min' },
   { n: 2, id: 'media', nombre: 'Media', lema: 'Con el detalle, las tablas y las prácticas', duracion: 'media jornada' },
   { n: 3, id: 'completa', nombre: 'Completa', lema: 'Cada tema y cada diapositiva del curso', duracion: 'dos jornadas' },
+  { n: 4, id: 'agente', nombre: 'Agente', lema: 'Solo cómo se usa el agente: contexto, reglas, skills, hooks, workflow y harness, con ejemplos en vivo', duracion: 'unas 2 horas' },
 ]
 
+const MODULOS_AGENTE = ['02', '03', '05', '06']
+const enAgente = (nodo, numero) => MODULOS_AGENTE.includes(numero) && nodo.nivel <= 2
+const incluye = (nodo, ruta, numero) => (ruta.n === 4 ? enAgente(nodo, numero) : nodo.nivel <= ruta.n)
 const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 const slug = (t) => t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 const RE_REF = /\[D([12]):(\d+)(?:-(\d+))?\]/g
@@ -184,11 +188,11 @@ const limpiar = (linea) => linea.replace(RE_REF, (_, d, a, b) => `(D${d}·${a}${
 function rutaMarkdown(ruta) {
   const salida = [`# Desarrollo de software con IA · Ruta ${ruta.nombre.toLowerCase()}`, '',
     `> ${ruta.lema}. Duración orientativa para explicarla: ${ruta.duracion}. Las referencias (D1·34) remiten a las diapositivas originales en \`00-material-original/diapositivas/\`.`, '']
-  const volcar = (nodo, almohadillas) => {
-    if (nodo.nivel > ruta.n) return
+  const volcar = (nodo, almohadillas, numero = nodo.numero) => {
+    if (!incluye(nodo, ruta, numero)) return
     const refs = nodo.refs.length ? '' : ''
     salida.push(`${almohadillas} ${nodo.titulo}${refs}`, ...nodo.lineas.map(limpiar))
-    nodo.hijos.forEach((hijo) => volcar(hijo, `${almohadillas}#`))
+    nodo.hijos.forEach((hijo) => volcar(hijo, `${almohadillas}#`, numero))
   }
   modulos.forEach((m) => volcar(m, '#'))
   return salida.join('\n').replace(/\n{3,}/g, '\n\n')
@@ -204,19 +208,19 @@ const refsHtml = (nodo) => {
 }
 const sinRefs = (lineas) => lineas // las referencias en línea se convierten en chips dentro del texto
 
-const seccionHtml = (nodo, clase, tag) => `<section class="${clase}" data-nivel="${nodo.nivel}" id="${nodo.id}">
+const seccionHtml = (nodo, clase, tag, numero) => `<section class="${clase}" data-nivel="${nodo.nivel}"${enAgente(nodo, numero) ? ' data-agente' : ''} id="${nodo.id}">
 <${tag}>${enLinea(nodo.titulo)}<span class="marca n${nodo.nivel}">${nombreRuta[nodo.nivel]}</span></${tag}><button class="quitar" data-clave="${nodo.id}"></button>
 ${nodo.etiqueta !== undefined || nodo.refs.length ? '' : ''}${bloques(sinRefs(nodo.lineas))}
-${nodo.hijos.map((h) => seccionHtml(h, 'sub', 'h3')).join('\n')}
+${nodo.hijos.map((h) => seccionHtml(h, 'sub', 'h3', numero)).join('\n')}
 </section>`
 
 const contenido = modulos.map((m) => {
   const video = videoDe(m.numero)
-  return `<article class="modulo" data-nivel="${m.nivel}" id="${m.id}" data-numero="${m.numero}">
+  return `<article class="modulo" data-nivel="${m.nivel}"${enAgente(m, m.numero) ? ' data-agente' : ''} id="${m.id}" data-numero="${m.numero}">
 <header><p class="num">Módulo <span class="n-mod">${m.numero}</span></p><h1>${enLinea(m.titulo)}<span class="marca n${m.nivel}">${nombreRuta[m.nivel]}</span></h1><button class="quitar" data-clave="${m.id}"></button></header>
 ${bloques(m.lineas)}
 ${video ? `<details class="video" data-video="${m.numero}"><summary>Vídeo explicativo del módulo</summary><video controls preload="none" src="../03-videos/${video}"></video></details>` : ''}
-${m.hijos.map((s) => seccionHtml(s, 'seccion', 'h2')).join('\n')}
+${m.hijos.map((s) => seccionHtml(s, 'seccion', 'h2', m.numero)).join('\n')}
 </article>`
 }).join('\n')
 
@@ -231,17 +235,17 @@ const ejercicios = readFileSync(join(RAIZ, '01-guia/taller.md'), 'utf8').split(/
   for (const p of partes) if (!CLASE_PARTE[p.nombre]) throw new Error(`Taller: parte desconocida «${p.nombre}» en «${titulo}»`)
   if (meta.guia && !modulos.some((m) => m.id === meta.guia || m.hijos.some((s) => s.id === meta.guia))) throw new Error(`Taller: «${titulo}» enlaza a una sección que no existe: ${meta.guia}`)
   if (meta.lab && !NOMBRE_LAB[meta.lab]) throw new Error(`Taller: «${titulo}» enlaza a una herramienta que no existe: ${meta.lab}`)
-  return { n: i, id: `t${i}`, titulo, nivel: NIVEL[etiqueta], meta, partes }
+  return { n: i, id: `t${i}`, titulo, nivel: NIVEL[etiqueta], meta, partes, agente: meta.agente === 'si' }
 })
-const taller = ejercicios.map((e) => `<article class="ejercicio" data-nivel="${e.nivel}" id="${e.id}" data-min="${e.meta.tiempo}">
+const taller = ejercicios.map((e) => `<article class="ejercicio" data-nivel="${e.nivel}"${e.agente ? ' data-agente' : ''} id="${e.id}" data-min="${e.meta.tiempo}">
 <header><p class="num">Ejercicio <span class="n-ej">${e.n + 1}</span> · ${e.meta.tiempo} min · ${esc(e.meta.necesita)}</p><h2>${enLinea(e.titulo)}<span class="marca n${e.nivel}">${nombreRuta[e.nivel]}</span></h2><button class="quitar" data-clave="${e.id}"></button></header>
 ${e.partes.map((p) => `<div class="parte ${CLASE_PARTE[p.nombre]}"><h3>${p.nombre}</h3>${bloques(p.cuerpo)}</div>`).join('\n')}
 <footer>${e.meta.lab ? `<button class="ir-lab" data-lab="${e.meta.lab}">Abrir en el laboratorio: ${NOMBRE_LAB[e.meta.lab]}</button>` : ''}${e.meta.guia ? `<button class="ir-guia" data-guia="${e.meta.guia}">La explicación, en la guía</button>` : ''}<label class="hecho"><input type="checkbox" data-hecho="${e.id}"> Hecho</label></footer>
 </article>`).join('\n')
 
-const cuenta = (n) => modulos.flatMap((m) => m.hijos).filter((s) => s.nivel <= n).length
+const cuenta = (ruta) => modulos.flatMap((m) => m.hijos.map((s) => [s, m.numero])).filter(([s, numero]) => incluye(s, ruta, numero)).length
 const datos = {
-  rutas: RUTAS.map((r) => ({ ...r, secciones: cuenta(r.n), modulos: modulos.filter((m) => m.nivel <= r.n).length, ejercicios: ejercicios.filter((e) => e.nivel <= r.n).length, minutosTaller: ejercicios.filter((e) => e.nivel <= r.n).reduce((s, e) => s + Number(e.meta.tiempo), 0) })),
+  rutas: RUTAS.map((r) => { const suyos = ejercicios.filter((e) => (r.n === 4 ? e.agente : e.nivel <= r.n)); return { ...r, secciones: cuenta(r), modulos: modulos.filter((m) => incluye(m, r, m.numero)).length, ejercicios: suyos.length, minutosTaller: suyos.reduce((s, e) => s + Number(e.meta.tiempo), 0) } }),
   total: TOTAL,
   donde: Object.fromEntries(donde),
   videos: modulos.filter((m) => videoDe(m.numero)).map((m) => ({ numero: m.numero, titulo: m.titulo, fichero: videoDe(m.numero), nivel: m.nivel })),
@@ -255,6 +259,7 @@ const html = leer('plantilla.html')
   .replace('/*DATOS*/', () => `const DATOS = ${JSON.stringify(datos)};`)
   .replace('/*APP*/', () => leer('app.js'))
   .replace('/*LAB*/', () => leer('lab.js'))
+  .replace('/*VIVO*/', () => leer('vivo.js'))
 writeFileSync(join(AQUI, 'index.html'), html)
 
 console.log(`Site: 04-site/index.html (${(html.length / 1024).toFixed(0)} KB)`)

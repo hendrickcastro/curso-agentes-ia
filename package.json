@@ -1,0 +1,13 @@
+{
+  "name": "curso-desarrollo-con-ia",
+  "private": true,
+  "type": "module",
+  "description": "Transferencia de conocimiento del curso «Desarrollo de software con IA»: site, taller, ejemplos en vivo con Claude Code y material para impartirlo.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node servidor.mjs",
+    "build": "node 04-site/build.mjs"
+  }
+}
