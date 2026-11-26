@@ -70,6 +70,23 @@ details.video{margin:1em 0; border:1px solid var(--linea); border-radius:10px; p
 details.video summary{cursor:pointer; font-weight:600}
 video{width:100%; border-radius:8px; margin-top:8px; background:#000}
 
+/* edición: quitar y renumerar */
+[hidden]{display:none !important}
+.quitar{display:none; font-size:12px; padding:2px 10px; margin:4px 0}
+body.editando .quitar{display:inline-block}
+body.editando #editar{background:var(--aviso); color:var(--papel); border-color:var(--aviso); font-weight:600}
+body:not(.editando) .quitado{display:none !important}
+body.editando .quitado{opacity:.5; border-style:dashed}
+body.editando .quitado>:not(header):not(h2):not(h3):not(.quitar):not(img):not(span){display:none}
+body.editando .quitado h1, body.editando .quitado h2, body.editando .quitado h3{text-decoration:line-through}
+body.editando .quitado .quitar{opacity:1}
+body.editando .rejilla button{position:relative}
+body.editando .rejilla button::after{content:"Quitar"; position:absolute; top:6px; right:6px; padding:2px 8px; border-radius:6px; font-size:12px; background:var(--papel); border:1px solid var(--linea)}
+body.editando .rejilla button.quitado::after{content:"Restaurar"}
+#barra-edicion{position:fixed; left:0; right:0; bottom:0; z-index:30; display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:10px 18px; background:var(--aviso-suave); border-top:2px solid var(--aviso)}
+#barra-edicion span{margin-right:auto; font-weight:600}
+#pase .quitar{display:none}
+
 /* taller */
 .ejercicio{background:var(--papel); border:1px solid var(--linea); border-radius:14px; padding:22px clamp(16px,3vw,32px); margin-bottom:22px}
 .ejercicio.terminado{border-color:var(--verde)}

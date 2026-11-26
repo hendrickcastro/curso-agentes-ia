@@ -27,21 +27,83 @@ function ponerRuta(n) {
   $$('button', cajaRutas).forEach((b) => b.classList.toggle('activo', Number(b.dataset.n) === n))
   const r = DATOS.rutas.find((x) => x.n === n)
   $('#resumen-ruta').innerHTML = `<b>Ruta ${r.nombre.toLowerCase()}</b>${r.lema}.<br><small>${r.modulos} módulos · ${r.secciones} secciones · ${r.duracion}</small>`
-  pintarIndice()
-  pintarCabeceraTaller()
+  aplicarEdicion()
 }
 DATOS.rutas.forEach((r) => cajaRutas.append(h('button', { 'data-n': r.n, title: `${r.lema} (${r.duracion})`, onclick: () => ponerRuta(r.n) }, r.nombre)))
 
-const visible = (el) => Number(el.dataset.nivel) <= Number(document.body.dataset.ruta)
-const tituloDe = (el) => { const t = el.querySelector('h1,h2,h3').cloneNode(true); $$('.marca,.dia,.refs', t).forEach((x) => x.remove()); return t.textContent.trim() }
+const visible = (el) => Number(el.dataset.nivel) <= Number(document.body.dataset.ruta) && !el.closest('.quitado')
+const tituloDe = (el) => { const t = el.querySelector('h1,h2,h3').cloneNode(true); $$('.marca,.dia,.refs,.quitar', t).forEach((x) => x.remove()); return t.textContent.trim() }
 
 function pintarIndice() {
   const toc = $('#toc')
   toc.textContent = ''
   for (const modulo of $$('.modulo').filter(visible)) {
-    toc.append(h('a', { href: `#${modulo.id}`, class: 'mod' }, `${modulo.dataset.numero} · ${tituloDe(modulo)}`))
+    toc.append(h('a', { href: `#${modulo.id}`, class: 'mod' }, `${$('.n-mod', modulo).textContent} · ${tituloDe(modulo)}`))
     for (const seccion of $$(':scope > .seccion', modulo).filter(visible)) toc.append(h('a', { href: `#${seccion.id}` }, tituloDe(seccion)))
   }
+}
+
+// ---------- edición: quitar ejercicios, módulos, secciones, vídeos y diapositivas, y renumerar lo que queda ----------
+// Claves: t3 (ejercicio) · m04 y m04-el-ratchet (módulo y sección) · v04 (vídeo) · d1:34 (diapositiva)
+let quitados = memoria.leer('kt540.quitados', {})
+const claveDia = (d, n) => `d${d}:${n}`
+const diaQuitada = (d, n) => Boolean(quitados[claveDia(d, n)])
+const diasVivas = (d) => Array.from({ length: DATOS.total[d] }, (_, i) => i + 1).filter((n) => !diaQuitada(d, n))
+const numeroDia = (d, n) => diasVivas(d).indexOf(n) + 1
+function alternar(clave) {
+  if (quitados[clave]) delete quitados[clave]
+  else quitados[clave] = true
+  memoria.guardar('kt540.quitados', quitados)
+  aplicarEdicion()
+}
+function aplicarEdicion() {
+  if ($('#vista-videos').childElementCount) { $('#vista-videos').textContent = ''; pintarVideos() }
+  if ($('#vista-diapos').childElementCount) { $('#vista-diapos').textContent = ''; pintarDiapositivas() }
+  $$('.quitar[data-clave]').forEach((b) => {
+    const fuera = Boolean(quitados[b.dataset.clave])
+    b.textContent = fuera ? 'Restaurar' : 'Quitar'
+    b.closest('.ejercicio,.modulo,.seccion,.sub,.panel-video').classList.toggle('quitado', fuera)
+  })
+  // renumerar según la secuencia que queda (ruta elegida, menos lo quitado)
+  $$('.ejercicio').filter(visible).forEach((e, i) => ($('.n-ej', e).textContent = i + 1))
+  $$('.modulo').filter(visible).forEach((m, i) => ($('.n-mod', m).textContent = pad(i + 1)))
+  $$('details.video').forEach((d) => (d.hidden = Boolean(quitados[`v${d.dataset.video}`])))
+  const vivas = { 1: diasVivas(1), 2: diasVivas(2) }
+  $$('.dia').forEach((chip) => {
+    const d = Number(chip.dataset.d)
+    const desde = Number(chip.dataset.n)
+    const hasta = Number(chip.dataset.b ?? desde)
+    const quedan = vivas[d].filter((n) => n >= desde && n <= hasta)
+    chip.hidden = quedan.length === 0
+    if (!quedan.length) return
+    const k = (n) => vivas[d].indexOf(n) + 1
+    chip.textContent = `D${d}·${k(quedan[0])}${quedan.length > 1 ? `–${k(quedan.at(-1))}` : ''}`
+    chip.dataset.abre = quedan[0]
+  })
+  pintarIndice()
+  pintarCabeceraTaller()
+  const total = Object.keys(quitados).length
+  $('#edicion-cuenta').textContent = total ? `Modo edición · ${total} elemento${total === 1 ? '' : 's'} quitado${total === 1 ? '' : 's'}; lo que queda se renumera solo` : 'Modo edición · pulsa «Quitar» en lo que no vayas a usar; lo que queda se renumera solo'
+}
+function ponerEdicion(activa) {
+  document.body.classList.toggle('editando', activa)
+  $('#barra-edicion').hidden = !activa
+  $('#editar').textContent = activa ? '✓ Terminar edición' : '✎ Editar'
+}
+$('#editar').onclick = () => ponerEdicion(!document.body.classList.contains('editando'))
+$('#edicion-fin').onclick = () => ponerEdicion(false)
+$('#edicion-restaurar').onclick = () => { if (!Object.keys(quitados).length || confirm('¿Restaurar todo lo quitado?')) { quitados = {}; memoria.guardar('kt540.quitados', quitados); aplicarEdicion() } }
+$('#edicion-exportar').onclick = () => h('a', { href: URL.createObjectURL(new Blob([JSON.stringify({ quitados }, null, 2)], { type: 'application/json' })), download: 'seleccion-curso-540.json' }).click()
+$('#edicion-importar').onclick = () => $('#edicion-fichero').click()
+$('#edicion-fichero').onchange = async (ev) => {
+  try {
+    const datos = JSON.parse(await ev.target.files[0].text())
+    if (!datos.quitados || typeof datos.quitados !== 'object') throw new Error('formato')
+    quitados = Object.fromEntries(Object.keys(datos.quitados).map((k) => [k, true]))
+    memoria.guardar('kt540.quitados', quitados)
+    aplicarEdicion()
+  } catch { alert('El fichero no es una selección exportada desde este site.') }
+  ev.target.value = ''
 }
 
 // ---------- taller: ejercicios, progreso y saltos a la guía y al laboratorio ----------
@@ -50,7 +112,7 @@ function pintarCabeceraTaller() {
   const r = DATOS.rutas.find((x) => x.n === Number(document.body.dataset.ruta))
   const visibles = $$('.ejercicio').filter(visible)
   const marcados = visibles.filter((e) => hechos()[e.id]).length
-  $('#taller-cabecera').innerHTML = `<h1>Taller</h1><p class="lema">Menos explicación y más teclado: cada ejercicio es <strong>haz esto → deberías ver esto → cuéntalo en el chat</strong>, y la teoría cabe en una frase. Ruta ${r.nombre.toLowerCase()}: ${r.ejercicios} ejercicios, ${r.minutosTaller} minutos de práctica.</p><div class="progreso-taller"><i style="width:${visibles.length ? (marcados / visibles.length) * 100 : 0}%"></i></div><p class="ayuda">${marcados} de ${visibles.length} hechos. El progreso se guarda en este navegador.</p>`
+  $('#taller-cabecera').innerHTML = `<h1>Taller</h1><p class="lema">Menos explicación y más teclado: cada ejercicio es <strong>haz esto → deberías ver esto → cuéntalo en el chat</strong>, y la teoría cabe en una frase. Ruta ${r.nombre.toLowerCase()}: ${visibles.length} ejercicios, ${visibles.reduce((s, e) => s + Number(e.dataset.min), 0)} minutos de práctica.</p><div class="progreso-taller"><i style="width:${visibles.length ? (marcados / visibles.length) * 100 : 0}%"></i></div><p class="ayuda">${marcados} de ${visibles.length} hechos. El progreso se guarda en este navegador.</p>`
 }
 $$('[data-hecho]').forEach((c) => {
   c.checked = Boolean(hechos()[c.dataset.hecho])
@@ -80,20 +142,25 @@ function pintarVideos() {
   const caja = $('#vista-videos')
   caja.append(h('h1', {}, 'Vídeos explicativos'), h('p', {}, 'Un vídeo corto por módulo, con narración. Los guiones están en 03-videos/guiones.md.'))
   if (!DATOS.videos.length) caja.append(h('p', {}, 'Todavía no hay vídeos generados (ejecuta 03-videos/generar.sh y después 04-site/build.mjs).'))
+  let orden = 0
   for (const v of DATOS.videos) {
-    caja.append(h('div', { class: 'panel' }, h('h3', {}, `${v.numero} · ${v.titulo}`), h('video', { controls: true, preload: 'none', src: `../03-videos/${v.fichero}` })))
+    const fuera = Boolean(quitados[`v${v.numero}`])
+    caja.append(h('div', { class: `panel panel-video${fuera ? ' quitado' : ''}` }, h('h3', {}, fuera ? v.titulo : `${++orden} · ${v.titulo}`), h('button', { class: 'quitar', 'data-clave': `v${v.numero}` }, fuera ? 'Restaurar' : 'Quitar'), h('video', { controls: true, preload: 'none', src: `../03-videos/${v.fichero}` })))
   }
 }
 
 function pintarDiapositivas() {
   const caja = $('#vista-diapos')
-  caja.append(h('h1', {}, 'Diapositivas originales'), h('p', {}, 'Las 166 diapositivas del curso. Cada una enlaza con la sección de la guía donde se explica.'))
+  const vivas = diasVivas(1).length + diasVivas(2).length
+  caja.append(h('h1', {}, 'Diapositivas originales'), h('p', {}, `${vivas} diapositivas${vivas < DATOS.total[1] + DATOS.total[2] ? ` (de ${DATOS.total[1] + DATOS.total[2]}; el resto están quitadas)` : ' del curso'}. Cada una enlaza con la sección de la guía donde se explica.`))
   for (const d of [1, 2]) {
     caja.append(h('h2', {}, `Día ${d}`))
     const rejilla = h('div', { class: 'rejilla' })
     for (let n = 1; n <= DATOS.total[d]; n++) {
       const info = DATOS.donde[`${d}:${n}`]
-      rejilla.append(h('button', { onclick: () => abrirVisor(d, n) }, h('img', { loading: 'lazy', src: rutaDia(d, n), alt: `Día ${d}, diapositiva ${n}` }), h('span', {}, `D${d}·${n} — ${info.etiqueta.split(' › ').slice(-1)[0]}`)))
+      const fuera = diaQuitada(d, n)
+      const k = numeroDia(d, n)
+      rejilla.append(h('button', { class: fuera ? 'quitado' : '', onclick: () => (document.body.classList.contains('editando') ? alternar(claveDia(d, n)) : abrirVisor(d, n)) }, h('img', { loading: 'lazy', src: rutaDia(d, n), alt: `Día ${d}, diapositiva ${fuera ? n : k}` }), h('span', {}, `${fuera ? 'Quitada' : `D${d}·${k}`}${!fuera && k !== n ? ` (era la ${n})` : ''} — ${info.etiqueta.split(' › ').slice(-1)[0]}`)))
     }
     caja.append(rejilla)
   }
@@ -107,7 +174,7 @@ function abrirVisor(d, n) {
   const info = DATOS.donde[`${d}:${n}`]
   $('img', visor).src = rutaDia(d, n)
   const pie = $('figcaption', visor)
-  pie.textContent = `Día ${d} · diapositiva ${n} de ${DATOS.total[d]} — `
+  pie.textContent = diaQuitada(d, n) ? `Día ${d} · diapositiva quitada — ` : `Día ${d} · diapositiva ${numeroDia(d, n)} de ${diasVivas(d).length} — `
   pie.append(h('a', { href: `#${info.id}`, onclick: () => irA(info) }, info.etiqueta))
   visor.hidden = false
 }
@@ -119,9 +186,12 @@ function irA(info) {
 }
 function moverVisor(paso) {
   let { d, n } = actual
-  n += paso
-  if (n < 1) { d = d === 1 ? 2 : 1; n = DATOS.total[d] }
-  if (n > DATOS.total[d]) { d = d === 1 ? 2 : 1; n = 1 }
+  for (let intento = 0; intento < DATOS.total[1] + DATOS.total[2]; intento++) {
+    n += paso
+    if (n < 1) { d = d === 1 ? 2 : 1; n = DATOS.total[d] }
+    if (n > DATOS.total[d]) { d = d === 1 ? 2 : 1; n = 1 }
+    if (!diaQuitada(d, n)) break
+  }
   abrirVisor(d, n)
 }
 $('.cerrar', visor).onclick = () => (visor.hidden = true)
@@ -130,7 +200,9 @@ $('.siguiente', visor).onclick = () => moverVisor(1)
 visor.addEventListener('click', (e) => { if (e.target === visor) visor.hidden = true })
 document.addEventListener('click', (e) => {
   const dia = e.target.closest('.dia')
-  if (dia) abrirVisor(Number(dia.dataset.d), Number(dia.dataset.n))
+  if (dia) abrirVisor(Number(dia.dataset.d), Number(dia.dataset.abre ?? dia.dataset.n))
+  const quitar = e.target.closest('.quitar')
+  if (quitar) alternar(quitar.dataset.clave)
   const copiar = e.target.closest('.copiar')
   if (copiar) {
     navigator.clipboard?.writeText(copiar.closest('figure').querySelector('code').textContent)
@@ -196,6 +268,7 @@ document.addEventListener('keydown', (e) => {
     return
   }
   if (e.key === 'p' || e.key === 'P') presentar()
+  if (e.key === 'e' || e.key === 'E') ponerEdicion(!document.body.classList.contains('editando'))
   if (['1', '2', '3'].includes(e.key)) ponerRuta(Number(e.key))
 })
 

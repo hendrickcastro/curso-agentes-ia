@@ -17,6 +17,7 @@
     <button data-vista="diapos">Diapositivas</button>
   </nav>
   <div class="rutas" role="group" aria-label="Ruta"></div>
+  <button id="editar" title="Quitar ejercicios, secciones, vídeos o diapositivas (E)">✎ Editar</button>
   <button id="presentar" title="Modo presentación (P)">▶ Presentar</button>
 </header>
 
@@ -29,6 +30,15 @@
     <div id="vista-videos" class="vista" hidden></div>
     <div id="vista-diapos" class="vista" hidden></div>
   </main>
+</div>
+
+<div id="barra-edicion" hidden>
+  <span id="edicion-cuenta"></span>
+  <button id="edicion-restaurar">Restaurar todo</button>
+  <button id="edicion-exportar">Exportar selección</button>
+  <button id="edicion-importar">Importar selección</button>
+  <input id="edicion-fichero" type="file" accept="application/json" hidden>
+  <button id="edicion-fin" class="primario">Terminar</button>
 </div>
 
 <div id="visor" hidden>

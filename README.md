@@ -13,6 +13,7 @@ El curso es **práctico y en línea**: se da desde la vista Taller, cada persona
 | **Taller** | La pantalla inicial: 15 ejercicios paso a paso (haz esto → deberías ver esto → cuéntalo en el chat), con los comandos para copiar, el progreso de cada persona y la teoría en una frase. Fuente: `01-guia/taller.md`. |
 | **Guía** | El contenido del curso para consultar, con selector de ruta. Cada sección enlaza a sus diapositivas originales. |
 | **▶ Presentar** (tecla `P`) | Un ejercicio (o una sección de la guía) por pantalla, en letra grande, con ← y →. Respeta la ruta elegida. |
+| **✎ Editar** (tecla `E`) | Quita ejercicios, módulos, secciones, vídeos o diapositivas que no vayas a usar; lo que queda se renumera solo según la secuencia. Se guarda en el navegador, se puede restaurar, y «Exportar selección» genera un JSON para que otra persona cargue el mismo recorte. |
 | **Laboratorio** | Ocho herramientas para hacer los ejemplos, **guardar** cada intento y **compararlos** lado a lado. Exporta e importa en JSON para juntar los de varias personas. |
 | **Vídeos** | Trece vídeos narrados, uno por módulo (unos 14 minutos en total). |
 | **Diapositivas** | Las 166 originales, cada una con el enlace a la sección que la explica. |

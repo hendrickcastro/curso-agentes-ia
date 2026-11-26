@@ -38,7 +38,7 @@ const expandir = (texto) =>
   })
 
 // ---------- Markdown → HTML (subconjunto suficiente para la guía) ----------
-const chip = (_, d, a, b) => `<button class="dia" data-d="${d}" data-n="${a}" title="Ver la diapositiva">D${d}·${a}${b ? `–${b}` : ''}</button>`
+const chip = (_, d, a, b) => `<button class="dia" data-d="${d}" data-n="${a}"${b ? ` data-b="${b}"` : ''} title="Ver la diapositiva">D${d}·${a}${b ? `–${b}` : ''}</button>`
 
 function enLinea(texto) {
   const codigos = []
@@ -205,7 +205,7 @@ const refsHtml = (nodo) => {
 const sinRefs = (lineas) => lineas // las referencias en línea se convierten en chips dentro del texto
 
 const seccionHtml = (nodo, clase, tag) => `<section class="${clase}" data-nivel="${nodo.nivel}" id="${nodo.id}">
-<${tag}>${enLinea(nodo.titulo)}<span class="marca n${nodo.nivel}">${nombreRuta[nodo.nivel]}</span></${tag}>
+<${tag}>${enLinea(nodo.titulo)}<span class="marca n${nodo.nivel}">${nombreRuta[nodo.nivel]}</span></${tag}><button class="quitar" data-clave="${nodo.id}"></button>
 ${nodo.etiqueta !== undefined || nodo.refs.length ? '' : ''}${bloques(sinRefs(nodo.lineas))}
 ${nodo.hijos.map((h) => seccionHtml(h, 'sub', 'h3')).join('\n')}
 </section>`
@@ -213,9 +213,9 @@ ${nodo.hijos.map((h) => seccionHtml(h, 'sub', 'h3')).join('\n')}
 const contenido = modulos.map((m) => {
   const video = videoDe(m.numero)
   return `<article class="modulo" data-nivel="${m.nivel}" id="${m.id}" data-numero="${m.numero}">
-<header><p class="num">Módulo ${m.numero}</p><h1>${enLinea(m.titulo)}<span class="marca n${m.nivel}">${nombreRuta[m.nivel]}</span></h1></header>
+<header><p class="num">Módulo <span class="n-mod">${m.numero}</span></p><h1>${enLinea(m.titulo)}<span class="marca n${m.nivel}">${nombreRuta[m.nivel]}</span></h1><button class="quitar" data-clave="${m.id}"></button></header>
 ${bloques(m.lineas)}
-${video ? `<details class="video"><summary>Vídeo explicativo del módulo</summary><video controls preload="none" src="../03-videos/${video}"></video></details>` : ''}
+${video ? `<details class="video" data-video="${m.numero}"><summary>Vídeo explicativo del módulo</summary><video controls preload="none" src="../03-videos/${video}"></video></details>` : ''}
 ${m.hijos.map((s) => seccionHtml(s, 'seccion', 'h2')).join('\n')}
 </article>`
 }).join('\n')
@@ -234,7 +234,7 @@ const ejercicios = readFileSync(join(RAIZ, '01-guia/taller.md'), 'utf8').split(/
   return { n: i, id: `t${i}`, titulo, nivel: NIVEL[etiqueta], meta, partes }
 })
 const taller = ejercicios.map((e) => `<article class="ejercicio" data-nivel="${e.nivel}" id="${e.id}" data-min="${e.meta.tiempo}">
-<header><p class="num">Ejercicio ${e.n} · ${e.meta.tiempo} min · ${esc(e.meta.necesita)}</p><h2>${enLinea(e.titulo)}<span class="marca n${e.nivel}">${nombreRuta[e.nivel]}</span></h2></header>
+<header><p class="num">Ejercicio <span class="n-ej">${e.n + 1}</span> · ${e.meta.tiempo} min · ${esc(e.meta.necesita)}</p><h2>${enLinea(e.titulo)}<span class="marca n${e.nivel}">${nombreRuta[e.nivel]}</span></h2><button class="quitar" data-clave="${e.id}"></button></header>
 ${e.partes.map((p) => `<div class="parte ${CLASE_PARTE[p.nombre]}"><h3>${p.nombre}</h3>${bloques(p.cuerpo)}</div>`).join('\n')}
 <footer>${e.meta.lab ? `<button class="ir-lab" data-lab="${e.meta.lab}">Abrir en el laboratorio: ${NOMBRE_LAB[e.meta.lab]}</button>` : ''}${e.meta.guia ? `<button class="ir-guia" data-guia="${e.meta.guia}">La explicación, en la guía</button>` : ''}<label class="hecho"><input type="checkbox" data-hecho="${e.id}"> Hecho</label></footer>
 </article>`).join('\n')
