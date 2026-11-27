@@ -28,7 +28,7 @@ const WINDOWS = process.platform === 'win32'
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.md': 'text/markdown; charset=utf-8', '.jpg': 'image/jpeg', '.png': 'image/png', '.mp4': 'video/mp4', '.pdf': 'application/pdf', '.zip': 'application/zip', '.svg': 'image/svg+xml' }
 
 // Lo que el agente puede hacer sin preguntar. Lo demás se deniega (y se ve en pantalla).
-const PERMITIDO = ['Bash(npm run *)', 'Bash(npm test*)', 'Bash(node tools/*)', 'Bash(node .claude/*)', 'Bash(node --test*)', 'Bash(git status*)', 'Bash(git diff*)', 'Bash(git log*)', 'Bash(ls*)', 'Bash(cat *)', 'Bash(grep *)', 'Bash(find *)', 'Bash(mkdir *)']
+const PERMITIDO = ['npm run *', 'npm test*', 'node tools/*', 'node .claude/*', 'node --test*', 'node --check *', 'git status*', 'git diff*', 'git log*', 'git ls-files*', 'git show*', 'ls*', 'cat *', 'grep *', 'find *', 'mkdir *', 'cd *', 'pwd', 'head *', 'tail *', 'wc *', 'echo *', 'sort*', 'uniq*', 'test *', 'true'].map((c) => `Bash(${c})`)
 
 const version = () => {
   const r = spawnSync(CLAUDE, ['--version'], { encoding: 'utf8', shell: WINDOWS })
@@ -48,7 +48,7 @@ function prepararCopia(ejemplo, variante) {
   mkdirSync(TRABAJO, { recursive: true })
   const dir = join(realpathSync(TRABAJO), `${ejemplo.id}-${variante.id}-${Date.now()}`)
   cpSync(DEMO, dir, { recursive: true })
-  for (const ruta of variante.quitar) rmSync(join(dir, ruta), { recursive: true, force: true })
+  for (const ruta of ['README.md', ...variante.quitar]) rmSync(join(dir, ruta), { recursive: true, force: true })
   const git = (...args) => spawnSync('git', args, { cwd: dir, encoding: 'utf8' })
   git('init', '-q', '-b', 'main')
   git('add', '-A')
@@ -106,7 +106,7 @@ function ejecutar(ejemplo, variante, res) {
   hijo.on('close', (codigo) => {
     clearTimeout(limite)
     enCurso.delete(hijo)
-    if (codigo !== 0 && errores.trim()) enviar({ tipo: 'aviso', texto: errores.trim().slice(-1500) })
+    if (codigo !== 0) enviar({ tipo: 'aviso', texto: `Claude Code terminó con error (código ${codigo}). ${errores.trim().slice(-1200)}\nComprueba en una terminal que esto funciona con tu cuenta:  claude -p "hola" --model ${MODELO}` })
     const git = (...a) => (spawnSync('git', a, { cwd: dir, encoding: 'utf8', maxBuffer: 8e6 }).stdout ?? '').trim()
     git('add', '-A', '-N')
     enviar({ tipo: 'cambios', ficheros: git('status', '--short'), diff: git('diff', 'HEAD').slice(0, 60_000) })
@@ -138,7 +138,7 @@ const servidor = createServer((req, res) => {
     const ejemplo = EJEMPLOS.find((e) => e.id === url.searchParams.get('ejemplo'))
     const variante = ejemplo?.variantes.find((v) => v.id === url.searchParams.get('variante'))
     if (!variante) { res.writeHead(404).end('Ejemplo o variante desconocidos.'); return }
-    if (enCurso.size >= 2) { res.writeHead(429).end('Ya hay dos ejecuciones en marcha. Espera a que termine una.'); return }
+    if (enCurso.size >= 4) { res.writeHead(429).end('Ya hay cuatro ejecuciones en marcha. Espera a que termine alguna.'); return }
     res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', Connection: 'keep-alive' })
     try { ejecutar(ejemplo, variante, res) } catch (error) { res.write(`data: ${JSON.stringify({ tipo: 'aviso', texto: error.message })}\n\ndata: {"tipo":"fin","codigo":1}\n\n`); res.end() }
     return

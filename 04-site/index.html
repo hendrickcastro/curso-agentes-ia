@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
 <title>Desarrollo de software con IA · Transferencia de conocimiento</title>
 <style>:root{
   --fondo:#f6f5f1; --papel:#ffffff; --tinta:#1c1d1f; --suave:#5d6168; --linea:#e2e0d8;
@@ -103,13 +104,16 @@ body.editando .rejilla button.quitado::after{content:"Restaurar"}
 .col-vivo{border:1px solid var(--linea); border-radius:12px; padding:14px; min-width:0; background:var(--fondo)}
 .col-cabecera{display:flex; justify-content:space-between; align-items:center; gap:8px}
 .col-cabecera h3{margin:0}
+.col-botones{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end}
+.col-botones button:not(.primario){font-size:13px}
 .rodea{margin:.4em 0 .8em; font-size:14px; color:var(--suave)}
 .registro{max-height:420px; overflow:auto; border:1px solid var(--linea); border-radius:8px; background:var(--papel); padding:8px 10px; font-size:13px}
 .ev{padding:3px 0; overflow-wrap:anywhere}
 .ev.texto{white-space:pre-wrap; padding:6px 0}
 .ev.herr code{font-size:12px}
 .ev.res summary,.ev.error summary,.ev.hook,.ev.inicio{color:var(--suave)}
-.ev.error summary,.ev.aviso{color:var(--rojo)}
+.ev.error summary,.ev.aviso{color:var(--rojo); white-space:pre-wrap}
+.ev.fallo summary,.ev.denegado{color:var(--aviso)}
 .ev.paro{background:var(--rojo-suave); color:var(--rojo); border-radius:6px; padding:6px 8px; margin:4px 0; font-weight:600}
 .ev pre,.resultado-vivo pre{white-space:pre-wrap; overflow-wrap:anywhere; background:var(--codigo); border-radius:6px; padding:8px 10px; margin:4px 0; font-size:12px; font-weight:400; color:var(--tinta); max-height:320px; overflow:auto}
 .resultado-vivo h4{margin:14px 0 4px; font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--suave)}
@@ -2303,7 +2307,7 @@ function entradasDe(evento, corrida) {
     if (paro) corrida.metricas.paradas++
     return [{ t: paro ? 'paro' : 'hook', texto: paro ? `El hook ${evento.hook_event} lo detiene (código ${evento.exit_code})` : `Hook ${evento.hook_event}: pasa`, detalle: paro ? corto(evento.stderr || evento.output || evento.stdout, 1200) : '' }]
   }
-  if (evento.type === 'system' && evento.subtype === 'permission_denied') return [{ t: 'error', texto: `Permiso denegado a ${evento.tool_name}: ese comando no está en la lista de lo permitido.` }]
+  if (evento.type === 'system' && evento.subtype === 'permission_denied') { corrida.metricas.denegados = (corrida.metricas.denegados ?? 0) + 1; return [{ t: 'denegado', texto: 'Comando no permitido en esta demostración. No es un fallo: el agente lo ve y sigue por otro camino.' }] }
   if (evento.type === 'assistant') {
     return (evento.message?.content ?? []).flatMap((c) => {
       if (c.type === 'text' && c.text.trim()) return [{ t: 'texto', texto: c.text.trim() }]
@@ -2317,7 +2321,7 @@ function entradasDe(evento, corrida) {
     })
   }
   if (evento.type === 'user') {
-    return (Array.isArray(evento.message?.content) ? evento.message.content : []).filter((c) => c.type === 'tool_result').map((c) => ({ t: c.is_error ? 'error' : 'res', texto: corto(textoDe(c.content).replaceAll(`${dir}/`, ''), 1200) }))
+    return (Array.isArray(evento.message?.content) ? evento.message.content : []).filter((c) => c.type === 'tool_result' && !(c.is_error && /^Permission for this tool use was denied/.test(textoDe(c.content)))).map((c) => ({ t: c.is_error ? 'fallo' : 'res', texto: corto(textoDe(c.content).replaceAll(`/private${dir}/`, '').replaceAll(`${dir}/`, ''), 1200) }))
   }
   if (evento.type === 'result') {
     Object.assign(corrida.metricas, { turnos: evento.num_turns, segundos: Math.round((evento.duration_ms ?? 0) / 1000), coste: evento.total_cost_usd, salida: evento.usage?.output_tokens, denegados: (evento.permission_denials ?? []).length })
@@ -2327,9 +2331,9 @@ function entradasDe(evento, corrida) {
   return []
 }
 
-const ICONO = { inicio: '●', texto: '💬', herr: '🔧', res: '↩', error: '✘', hook: '✓', paro: '⛔', aviso: '⚠' }
+const ICONO = { inicio: '●', texto: '💬', herr: '🔧', res: '↩', fallo: '↩', denegado: '🚫', error: '✘', hook: '✓', paro: '⛔', aviso: '⚠' }
 function nodoEntrada(e) {
-  if (e.t === 'res' || e.t === 'error') return h('details', { class: `ev ${e.t}` }, h('summary', {}, `${ICONO[e.t]} ${e.t === 'error' ? 'Error o denegado' : 'Resultado'} · ${e.texto.split('\n')[0].slice(0, 90)}`), h('pre', {}, e.texto))
+  if (['res', 'fallo', 'error'].includes(e.t)) return h('details', { class: `ev ${e.t}` }, h('summary', {}, `${ICONO[e.t]} ${{ res: 'Resultado', fallo: 'El comando devolvió un error (el agente lo lee y sigue)', error: 'Error' }[e.t]} · ${e.texto.split('\n')[0].slice(0, 90)}`), h('pre', {}, e.texto))
   if (e.t === 'herr') return h('div', { class: 'ev herr' }, `${ICONO.herr} `, h('b', {}, e.nombre), ' ', h('code', {}, e.texto))
   if (e.t === 'paro') return h('div', { class: 'ev paro' }, `${ICONO.paro} ${e.texto}`, e.detalle ? h('pre', {}, e.detalle) : null)
   return h('div', { class: `ev ${e.t}` }, `${ICONO[e.t] ?? ''} ${e.texto}`)
@@ -2339,17 +2343,18 @@ function pintarColumna(caja, ejemplo, variante) {
   const clave = `${ejemplo.id}:${variante.id}`
   const corrida = corridas[clave]
   const boton = h('button', { class: 'primario', 'data-ejecutar': clave }, corrida ? '↻ Repetir' : '▶ Ejecutar')
+  const reset = corrida ? h('button', { title: 'Borra este resultado y deja la columna como al principio' }, '⟲ Restablecer') : null
   const registro = h('div', { class: 'registro' })
   const resultado = h('div', { class: 'resultado-vivo' })
   caja.replaceChildren(...[
-    h('div', { class: 'col-cabecera' }, h('h3', {}, variante.nombre), boton),
+    h('div', { class: 'col-cabecera' }, h('h3', {}, variante.nombre), h('span', { class: 'col-botones' }, reset, boton)),
     h('p', { class: 'rodea' }, variante.rodea),
     variante.prompt !== ejemplo.prompt ? h('p', { class: 'ayuda' }, 'Prompt de esta columna: ', h('code', {}, variante.prompt)) : null,
     registro, resultado].filter(Boolean))
-  if (!corrida) { registro.append(h('p', { class: 'ayuda' }, 'Todavía sin ejecutar.')); return { boton, registro, resultado } }
+  if (!corrida) { registro.append(h('p', { class: 'ayuda' }, 'Todavía sin ejecutar.')); return { boton, reset, registro, resultado } }
   corrida.registro.forEach((e) => registro.append(nodoEntrada(e)))
   pintarResultado(resultado, corrida)
-  return { boton, registro, resultado }
+  return { boton, reset, registro, resultado }
 }
 
 function pintarResultado(caja, corrida) {
@@ -2370,7 +2375,6 @@ function filasComparacion(ejemplo) {
   if (!a?.fin || !b?.fin) return null
   const fila = (nombre, f) => [nombre, f(a), f(b)]
   const filas = [
-    fila('Ficheros que leyó', (c) => String(new Set(c.metricas.leidos).size)),
     fila('Ficheros que escribió', (c) => String(new Set(c.metricas.escritos).size)),
     fila('Skills que cargó', (c) => c.metricas.skills.join(', ') || '—'),
     fila('Veces que lo paró un hook', (c) => String(c.metricas.paradas)),
@@ -2387,16 +2391,27 @@ function pintarComparacion(caja, ejemplo) {
   caja.innerHTML = `<div class="tabla comparacion"><table><thead><tr><th></th>${ejemplo.variantes.map((v) => `<th>${v.nombre}</th>`).join('')}</tr></thead><tbody>${filas.map(([n, x, y]) => `<tr><th>${n}</th><td class="${x !== y ? 'distinto' : ''}">${x}</td><td class="${x !== y ? 'distinto' : ''}">${y}</td></tr>`).join('')}</tbody></table></div>`
 }
 
+let enMarcha = 0
+const enEspera = []
+const turno = () => new Promise((listo) => { if (enMarcha < 2) { enMarcha++; listo() } else enEspera.push(listo) })
+const soltar = () => { const siguiente = enEspera.shift(); if (siguiente) siguiente(); else enMarcha-- }
+
 async function lanzar(ejemplo, variante, refs, alTerminar) {
   const clave = `${ejemplo.id}:${variante.id}`
   const corrida = { fecha: Date.now(), registro: [], comprobaciones: [], ficheros: [], metricas: { herramientas: 0, paradas: 0, leidos: [], escritos: [], skills: [] }, dir: '', respuesta: '' }
   const anotar = (e) => { corrida.registro.push(e); refs.registro.append(nodoEntrada(e)); refs.registro.scrollTop = refs.registro.scrollHeight }
-  refs.boton.disabled = true
-  refs.boton.textContent = '… en marcha'
-  refs.registro.replaceChildren()
+  const control = new AbortController()
+  refs.abortar = () => control.abort()
+  if (refs.reset) refs.reset.hidden = true
+  refs.boton.textContent = '■ Detener (en cola)'
+  refs.registro.replaceChildren(h('p', { class: 'ayuda' }, 'Esperando a que termine otra ejecución (van de dos en dos)…'))
   refs.resultado.replaceChildren()
+  await turno()
+  refs.boton.textContent = '■ Detener'
+  refs.registro.replaceChildren()
   try {
-    const respuesta = await fetch(`/api/ejecutar?ejemplo=${ejemplo.id}&variante=${variante.id}`, { method: 'POST' })
+    if (control.signal.aborted) throw new Error('detenida')
+    const respuesta = await fetch(`/api/ejecutar?ejemplo=${ejemplo.id}&variante=${variante.id}`, { method: 'POST', signal: control.signal })
     if (!respuesta.ok) throw new Error(await respuesta.text())
     const lector = respuesta.body.getReader()
     const decodificador = new TextDecoder()
@@ -2421,30 +2436,40 @@ async function lanzar(ejemplo, variante, refs, alTerminar) {
   } catch (error) {
     anotar({ t: 'aviso', texto: `No se pudo ejecutar: ${error.message}` })
   }
-  delete corrida.dir
-  if (corrida.cambios) corrida.cambios.diff = corto(corrida.cambios.diff, 12000)
-  corridas[clave] = corrida
-  guardarCorridas() || anotar({ t: 'aviso', texto: 'No se pudo guardar el resultado en este navegador.' })
-  pintarResultado(refs.resultado, corrida)
-  refs.boton.disabled = false
-  refs.boton.textContent = '↻ Repetir'
+  soltar()
+  refs.abortar = null
+  // Una ejecución detenida no se guarda: la columna vuelve a como estaba antes de lanzarla.
+  if (!control.signal.aborted) {
+    delete corrida.dir
+    if (corrida.cambios) corrida.cambios.diff = corto(corrida.cambios.diff, 12000)
+    corridas[clave] = corrida
+    guardarCorridas()
+  }
   alTerminar()
 }
 
 function pintarEjemplo(ejemplo, i) {
   const columnas = ejemplo.variantes.map(() => h('div', { class: 'col-vivo' }))
   const comparacion = h('div', {})
-  const refs = ejemplo.variantes.map((v, k) => pintarColumna(columnas[k], ejemplo, v))
-  const alTerminar = () => pintarComparacion(comparacion, ejemplo)
-  const correr = (k) => lanzar(ejemplo, ejemplo.variantes[k], refs[k], alTerminar)
-  refs.forEach((r, k) => (r.boton.onclick = () => correr(k)))
-  alTerminar()
+  const refs = []
+  const comparar = () => pintarComparacion(comparacion, ejemplo)
+  const restablecer = (k) => { delete corridas[`${ejemplo.id}:${ejemplo.variantes[k].id}`]; guardarCorridas(); montar(k); comparar() }
+  // Pinta la columna desde lo guardado y engancha sus botones. Se llama al cargar, al terminar y al restablecer.
+  function montar(k) {
+    refs[k] = pintarColumna(columnas[k], ejemplo, ejemplo.variantes[k])
+    refs[k].boton.onclick = () => correr(k)
+    if (refs[k].reset) refs[k].reset.onclick = () => restablecer(k)
+  }
+  // El mismo botón lanza y, mientras corre, detiene.
+  const correr = (k) => { if (refs[k].abortar) refs[k].abortar(); else lanzar(ejemplo, ejemplo.variantes[k], refs[k], () => { montar(k); comparar() }) }
+  ejemplo.variantes.forEach((_, k) => montar(k))
+  comparar()
   return h('article', { class: 'ejemplo-vivo', 'data-nivel': 1, 'data-agente': '', id: `vivo-${ejemplo.id}` },
     h('header', {}, h('p', { class: 'num' }, 'Ejemplo ', h('span', { class: 'n-vivo' }, String(i + 1)), ` · ${ejemplo.tema}`), h('h2', {}, ejemplo.titulo), h('button', { class: 'quitar', 'data-clave': `vivo-${ejemplo.id}` })),
     h('p', { class: 'lema' }, ejemplo.idea),
     h('figure', { class: 'codigo' }, h('figcaption', {}, 'el mismo prompt en las dos columnas', h('button', { class: 'copiar' }, 'Copiar')), h('pre', {}, h('code', {}, ejemplo.prompt))),
     h('p', {}, h('strong', {}, 'En qué fijarte: '), ejemplo.mira),
-    h('div', { class: 'fila-botones' }, h('button', { class: 'primario', onclick: () => { correr(0); correr(1) } }, '▶▶ Ejecutar las dos a la vez'), ejemplo.guia ? h('button', { class: 'ir-guia', 'data-guia': ejemplo.guia }, 'La explicación, en la guía') : null),
+    h('div', { class: 'fila-botones' }, h('button', { class: 'primario', onclick: () => refs.forEach((r, k) => { if (!r.abortar) correr(k) }) }, '▶▶ Ejecutar las dos a la vez'), h('button', { title: 'Borra los dos resultados de este ejemplo', onclick: () => refs.forEach((r, k) => { if (!r.abortar) restablecer(k) }) }, '⟲ Restablecer el ejemplo'), ejemplo.guia ? h('button', { class: 'ir-guia', 'data-guia': ejemplo.guia }, 'La explicación, en la guía') : null),
     h('div', { class: 'dos-columnas' }, columnas),
     h('h3', {}, 'Comparación'), comparacion)
 }

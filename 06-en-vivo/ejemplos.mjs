@@ -1,5 +1,6 @@
 // Los ejemplos en vivo: el MISMO prompt lanzado dos veces, cambiando solo lo que rodea al agente.
-// Cada variante parte de una copia limpia de 02-ejemplos-codigo/demo a la que se le quitan piezas.
+// Cada variante parte de una copia limpia de 02-ejemplos-codigo/demo a la que se le quitan piezas
+// (y siempre el README.md, que explica el curso y le chivaría las reglas al agente).
 //
 // Comprobaciones (las ejecuta el servidor al terminar, no el agente):
 //   { cmd, espera: 'codigo0' | 'salida' | 'vacia' }   un comando en la copia de trabajo
@@ -15,7 +16,9 @@ const TODO = [...REGLAS, '.claude']
 
 const VERDE = { nombre: 'Tests y ratchet en verde', cmd: 'npm run -s check', espera: 'codigo0' }
 const CRITERIO = { nombre: 'El comportamiento nuevo entró como criterio en specs/', cmd: 'git status --short -- specs', espera: 'salida' }
-const TESTS_INTACTOS = { nombre: 'No tocó tests que ya existían', cmd: 'git diff --name-only HEAD -- test', espera: 'vacia' }
+const TESTS_INTACTOS = { nombre: 'No cambió ni borró tests que ya existían', cmd: 'node "{REPO}/06-en-vivo/comprobar/testsIntactos.mjs"', espera: 'codigo0' }
+// Una convención del equipo que solo está en AGENTS.md: no se puede deducir leyendo el código.
+const NOVEDADES = { nombre: 'Dejó la línea para producto en NOVEDADES.md (acuerdo del equipo)', existe: 'NOVEDADES.md' }
 const FRONTERA = { nombre: 'Las vistas no llaman a la API', cmd: 'npm run -s ratchet', espera: 'codigo0' }
 
 const LIMITE = 'Haz que el buscador muestre como máximo 3 resultados y avise de cuántos más hay.'
@@ -42,15 +45,15 @@ export const EJEMPLOS = [
     id: 'reglas',
     tema: 'Reglas',
     titulo: 'Las reglas del equipo, escritas',
-    idea: 'AGENTS.md lleva los acuerdos del equipo con su porqué. Sin él, el agente decide por su cuenta dónde va cada cosa. Son probabilísticas: casi siempre se cumplen.',
+    idea: 'AGENTS.md lleva los acuerdos del equipo con su porqué. Un buen modelo deduce mucho leyendo el código, pero un acuerdo que no está escrito en ningún sitio no lo puede adivinar. Son probabilísticas: casi siempre se cumplen.',
     prompt: LIMITE,
-    mira: 'Si el criterio nuevo entra en specs/ antes que el código, si toca tests que ya existían y qué decide sin preguntar (el texto del aviso, dónde va el límite).',
+    mira: 'El equipo acordó anotar cada cambio en NOVEDADES.md para producto. Sin reglas el agente no puede saberlo; con reglas lo hace sin que se lo pidas. Mira también qué decide sin preguntar (el texto del aviso, dónde va el límite).',
     guia: 'm05-tres-escalones',
     variantes: [
       { id: 'sin', nombre: 'Sin reglas', rodea: 'Solo el código. Sin AGENTS.md, sin contexto y sin hooks.', quitar: TODO },
       { id: 'con', nombre: 'Con reglas', rodea: 'AGENTS.md y CONTEXT.md. Sin hooks: aquí solo actúan las reglas escritas.', quitar: HOOKS },
     ],
-    comprobaciones: [CRITERIO, TESTS_INTACTOS, VERDE],
+    comprobaciones: [NOVEDADES, CRITERIO, TESTS_INTACTOS, VERDE],
   },
   {
     id: 'skill',
@@ -111,6 +114,6 @@ export const EJEMPLOS = [
       { id: 'sin', nombre: 'Solo el modelo', rodea: 'El código y nada más.', quitar: TODO },
       { id: 'con', nombre: 'Con el harness', rodea: 'Contexto, reglas, skills, hooks y la red de comprobaciones.', quitar: [] },
     ],
-    comprobaciones: [CRITERIO, TESTS_INTACTOS, FRONTERA, VERDE],
+    comprobaciones: [NOVEDADES, CRITERIO, TESTS_INTACTOS, FRONTERA, VERDE],
   },
 ]
