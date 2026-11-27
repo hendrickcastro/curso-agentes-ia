@@ -8,27 +8,27 @@
 // todo lo que hace. Cada ejecución queda guardada como una versión en 06-en-vivo/ejecuciones/
 // y la web que dejó el agente se sirve aparte, en el puerto siguiente (5401).
 //
-// Solo escucha en tu equipo (127.0.0.1) y solo ejecuta los ejemplos de 06-en-vivo/ejemplos.mjs:
-// no acepta prompts ni comandos del navegador.
+// Solo escucha en tu equipo (127.0.0.1) y solo atiende a su propia página. Ejecuta los ejemplos de
+// 06-en-vivo/ejemplos.mjs y, en «Entorno», un chat con el agente para dejar el equipo a punto
+// (ahí el agente solo puede escribir entorno.json).
 //
-// Variables: PUERTO (5400) · MODELO (claude-opus-5-5) · CLAUDE (ruta del ejecutable)
-import { spawn, spawnSync } from 'node:child_process'
+// Variables: PUERTO (5400) · MODELO (claude-opus-5-5) · CLAUDE (ruta del ejecutable).
+// Lo que no se encuentre solo se fija en entorno.json: ver 06-en-vivo/entorno.mjs.
+import { spawnSync } from 'node:child_process'
 import { appendFileSync, cpSync, createReadStream, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { dirname, extname, join, normalize, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { EJEMPLOS, ENCARGO } from './06-en-vivo/ejemplos.mjs'
+import { WINDOWS, ajustes, guardarAjustes, lanzarClaude, modelo, promptArreglo, revisarEntorno, versionClaude } from './06-en-vivo/entorno.mjs'
 
 const RAIZ = fileURLToPath(new URL('.', import.meta.url)).replace(/[\\/]$/, '')
 const PUERTO = Number(process.env.PUERTO ?? 5400)
 const PUERTO_WEBS = PUERTO + 1
-const MODELO = process.env.MODELO ?? 'claude-opus-5-5'
-const CLAUDE = process.env.CLAUDE ?? 'claude'
 const BASE = join(RAIZ, '06-en-vivo/pokedex')
 const EJECUCIONES = join(RAIZ, '06-en-vivo/ejecuciones')
 const REVISAR = join(RAIZ, '06-en-vivo/comprobar/revisar.mjs')
 const MAX_MINUTOS = 15
-const WINDOWS = process.platform === 'win32'
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.md': 'text/markdown; charset=utf-8', '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.mp4': 'video/mp4', '.pdf': 'application/pdf', '.zip': 'application/zip' }
 
 // Aislamiento de Claude Code (macOS y Linux): el agente puede lanzar cualquier comando, pero el sistema
@@ -37,10 +37,10 @@ const AISLADO = JSON.stringify({ sandbox: { enabled: true, autoAllowBashIfSandbo
 // Donde no hay aislamiento (Windows), solo se permite esta lista y lo demás se deniega (y se ve en pantalla).
 const PERMITIDO = ['npm run *', 'npm test*', 'node tools/*', 'node .claude/*', 'node --test*', 'node --check *', 'git status*', 'git diff*', 'git log*', 'git ls-files*', 'git show*', 'ls*', 'cat *', 'grep *', 'find *', 'mkdir *', 'cp *', 'cd *', 'pwd', 'head *', 'tail *', 'wc *', 'echo *', 'sort*', 'uniq*', 'test *', 'true'].map((c) => `Bash(${c})`)
 
-const version = () => {
-  const r = spawnSync(CLAUDE, ['--version'], { encoding: 'utf8', shell: WINDOWS })
-  return r.status === 0 ? r.stdout.trim() : null
-}
+// El agente que arregla el entorno tiene que poder mirar dónde están las cosas en el equipo.
+const PARA_BUSCAR = ['where *', 'which *', 'command -v *', 'dir *', 'ls*', 'cat *', 'find *', 'grep *', 'echo *', 'test *', 'pwd', 'head *', 'node -v', 'node --version', 'git --version', 'claude --version', 'cygpath *', 'cmd //c where *', 'cmd /c where *'].map((c) => `Bash(${c})`)
+const version = versionClaude
+let chatEnCurso = null
 const enCurso = new Map() // id → proceso
 const anotar = (texto) => console.log(`  ${new Date().toLocaleTimeString('es')}  ${texto}`)
 const leerJson = (ruta, defecto) => { try { return JSON.parse(readFileSync(ruta, 'utf8')) } catch { return defecto } }
@@ -77,6 +77,7 @@ function rutaNueva(dir) {
 const idValido = (id) => /^[a-z]+-[a-z]+-v\d+$/.test(id ?? '') && existsSync(join(EJECUCIONES, id))
 
 function prepararCopia(ejemplo, variante, id) {
+  ajustes() // aplica el PATH de entorno.json antes de usar git
   const dir = join(EJECUCIONES, id, 'proyecto')
   mkdirSync(dirname(dir), { recursive: true })
   cpSync(BASE, dir, { recursive: true })
@@ -103,6 +104,7 @@ function ejecutar(ejemplo, variante, res) {
   const carpeta = join(EJECUCIONES, id)
   const dir = prepararCopia(ejemplo, variante, id)
   const prompt = promptDe(ejemplo, variante)
+  const MODELO = modelo()
   const meta = { id, ejemplo: ejemplo.id, variante: variante.id, n, fecha: Date.now(), modelo: MODELO, terminado: false, comprobaciones: [], metricas: {} }
   const guardarMeta = () => writeFileSync(join(carpeta, 'meta.json'), JSON.stringify(meta, null, 2))
   guardarMeta()
@@ -119,7 +121,7 @@ function ejecutar(ejemplo, variante, res) {
   const args = ['-p', prompt, '--model', MODELO, '--output-format', 'stream-json', '--verbose', '--include-hook-events',
     '--setting-sources', 'project', '--permission-mode', 'acceptEdits', '--permission-prompts', 'none',
     '--strict-mcp-config', '--no-session-persistence', ...(WINDOWS ? ['--allowedTools', ...PERMITIDO] : ['--settings', AISLADO, '--allowedTools', 'Bash'])]
-  const hijo = spawn(CLAUDE, args, { cwd: dir, shell: WINDOWS, stdio: ['ignore', 'pipe', 'pipe'] })
+  const hijo = lanzarClaude(args, { cwd: dir })
   enCurso.set(id, hijo)
   let resto = ''
   let errores = ''
@@ -139,7 +141,7 @@ function ejecutar(ejemplo, variante, res) {
     }
   })
   hijo.stderr.on('data', (trozo) => { errores += trozo })
-  hijo.on('error', (error) => { enviar({ tipo: 'aviso', texto: `No se pudo lanzar Claude Code (${error.message}). ¿Está instalado y en el PATH?` }) })
+  hijo.on('error', (error) => { enviar({ tipo: 'aviso', texto: `No se pudo lanzar Claude Code (${error.message}). Revisa el entorno, arriba en esta página.` }) })
   hijo.on('close', (codigo) => {
     clearTimeout(limite)
     enCurso.delete(id)
@@ -161,6 +163,49 @@ function ejecutar(ejemplo, variante, res) {
     if (abierto) res.end()
   })
   res.on('close', () => { abierto = false; if (enCurso.has(id) && !res.writableFinished) { detenido = true; hijo.kill() } })
+}
+
+// ---------- entorno: el chat con el agente que lo arregla ----------
+function leerCuerpo(req) {
+  return new Promise((listo, fallo) => {
+    let texto = ''
+    req.on('data', (t) => { texto += t; if (texto.length > 200_000) req.destroy() })
+    req.on('end', () => { try { listo(JSON.parse(texto || '{}')) } catch (e) { fallo(e) } })
+    req.on('error', fallo)
+  })
+}
+
+async function arreglarEntorno(mensaje, historial, res) {
+  const enviar = (dato) => { if (!res.writableEnded) res.write(`data: ${JSON.stringify(dato)}\n\n`) }
+  const estado = await revisarEntorno()
+  const args = ['-p', promptArreglo(mensaje, historial, estado), '--model', modelo(), '--output-format', 'stream-json', '--verbose',
+    '--setting-sources', 'project', '--permission-mode', 'acceptEdits', '--permission-prompts', 'none', '--strict-mcp-config', '--no-session-persistence',
+    ...(WINDOWS ? ['--allowedTools', ...PARA_BUSCAR] : ['--settings', AISLADO, '--allowedTools', 'Bash'])]
+  let hijo
+  try { hijo = lanzarClaude(args, { cwd: RAIZ }) } catch (error) { enviar({ tipo: 'aviso', texto: error.message }); enviar({ tipo: 'fin', codigo: 1 }); res.end(); return }
+  chatEnCurso = hijo
+  anotar('🛠 entorno: el agente empieza')
+  enviar({ tipo: 'preparado', id: 'entorno', n: 0, dir: RAIZ, modelo: modelo(), quitar: [] })
+  let resto = ''
+  let errores = ''
+  const limite = setTimeout(() => hijo.kill(), 10 * 60_000)
+  hijo.stdout.on('data', (trozo) => {
+    const lineas = (resto + trozo).split('\n')
+    resto = lineas.pop()
+    for (const linea of lineas) { if (linea.trim()) { try { enviar({ tipo: 'evento', evento: JSON.parse(linea) }) } catch { /* no es JSON */ } } }
+  })
+  hijo.stderr.on('data', (trozo) => { errores += trozo })
+  hijo.on('error', (error) => enviar({ tipo: 'aviso', texto: `No se pudo lanzar Claude Code (${error.message}).` }))
+  hijo.on('close', async (codigo) => {
+    clearTimeout(limite)
+    chatEnCurso = null
+    if (codigo !== 0 && !res.writableEnded) enviar({ tipo: 'aviso', texto: `Claude Code terminó con error (código ${codigo}). ${errores.trim().slice(-1200)}` })
+    anotar('🛠 entorno: el agente termina')
+    enviar({ tipo: 'entorno', estado: await revisarEntorno() })
+    enviar({ tipo: 'fin', codigo })
+    res.end()
+  })
+  res.on('close', () => { if (chatEnCurso === hijo && !res.writableFinished) hijo.kill() })
 }
 
 // ---------- estáticos ----------
@@ -191,7 +236,21 @@ const servidor = createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost')
   const ruta = url.pathname
 
-  if (ruta === '/api/estado') return json(res, { claude: version(), modelo: MODELO, encargo: ENCARGO, ejemplos: EJEMPLOS.map(publico), ejecuciones: listarEjecuciones(), puertoWebs: PUERTO_WEBS, limiteMinutos: MAX_MINUTOS })
+  if (ruta === '/api/entorno' && req.method === 'GET') { revisarEntorno({ completo: url.searchParams.has('completo') }).then((estado) => json(res, estado)); return }
+  if (ruta === '/api/entorno/ajustes' || ruta === '/api/entorno/chat') {
+    if (req.method !== 'POST' || !mismoOrigen(req)) { res.writeHead(405).end(); return }
+    leerCuerpo(req).then(async (cuerpo) => {
+      if (ruta.endsWith('ajustes')) { guardarAjustes(cuerpo); anotar('🛠 entorno: ajustes guardados desde el navegador'); return json(res, await revisarEntorno()) }
+      const mensaje = String(cuerpo.mensaje ?? '').trim().slice(0, 4000)
+      const historial = (Array.isArray(cuerpo.historial) ? cuerpo.historial : []).slice(-8).map((m) => ({ quien: m.quien === 'yo' ? 'yo' : 'agente', texto: String(m.texto ?? '').slice(0, 3000) }))
+      if (!mensaje) return json(res, { error: 'Escribe qué hay que arreglar.' }, 400)
+      if (chatEnCurso) return json(res, { error: 'El agente todavía está con el mensaje anterior.' }, 429)
+      res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', Connection: 'keep-alive' })
+      await arreglarEntorno(mensaje, historial, res)
+    }).catch((error) => { if (!res.headersSent) json(res, { error: error.message }, 400); else res.end() })
+    return
+  }
+  if (ruta === '/api/estado') return json(res, { claude: version(), modelo: modelo(), encargo: ENCARGO, ejemplos: EJEMPLOS.map(publico), ejecuciones: listarEjecuciones(), puertoWebs: PUERTO_WEBS, limiteMinutos: MAX_MINUTOS })
 
   const deVersion = /^\/api\/ejecuciones\/([^/]+)(\/eventos)?$/.exec(ruta)
   if (deVersion) {
@@ -239,7 +298,7 @@ webs.listen(PUERTO_WEBS, '127.0.0.1')
 servidor.listen(PUERTO, '127.0.0.1', () => {
   const v = version()
   console.log(`\n  Curso «Desarrollo de software con IA»\n  Abre  http://localhost:${PUERTO}\n`)
-  console.log(v ? `  Claude Code ${v} · modelo ${MODELO}` : '  ⚠ No encuentro Claude Code («claude»). El site funciona, pero «En vivo» no podrá ejecutar los ejemplos.\n    Instálalo: https://claude.com/claude-code')
+  console.log(v ? `  Claude Code ${v} · modelo ${modelo()}` : '  ⚠ No encuentro Claude Code («claude»). El site funciona, pero «En vivo» no podrá ejecutar los ejemplos.\n    Indica dónde está en la pestaña «En vivo» → Entorno, o instálalo: https://claude.com/claude-code')
   console.log(`  Cada ejecución se guarda como una versión en 06-en-vivo/ejecuciones/ (${listarEjecuciones().length} guardadas)\n  y su web se sirve en http://localhost:${PUERTO_WEBS}/<versión>/\n  Ctrl+C para parar.\n`)
 })
-process.on('SIGINT', () => { for (const hijo of enCurso.values()) hijo.kill(); process.exit(0) })
+process.on('SIGINT', () => { for (const hijo of enCurso.values()) hijo.kill(); chatEnCurso?.kill(); process.exit(0) })

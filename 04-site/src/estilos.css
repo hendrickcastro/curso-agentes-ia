@@ -118,6 +118,23 @@ body.editando .rejilla button.quitado::after{content:"Restaurar"}
 .comprobacion summary small{color:var(--suave)}
 .veredicto{padding:10px 14px; border-radius:10px; font-weight:600}
 .sin-claude{border-color:var(--rojo)}
+details.entorno>summary{cursor:pointer; font-weight:600}
+details.entorno h4{margin:18px 0 4px}
+.pruebas-entorno{list-style:none; padding:0; margin:12px 0}
+.pruebas-entorno li{display:grid; grid-template-columns:minmax(180px,280px) 1fr; gap:2px 14px; padding:7px 0; border-bottom:1px solid var(--linea); font-size:14px}
+.pruebas-entorno li span{overflow-wrap:anywhere; color:var(--suave)}
+.pruebas-entorno li em{grid-column:2; color:var(--rojo); font-style:normal}
+.pruebas-entorno li.bien b{color:var(--verde)} .pruebas-entorno li.mal b{color:var(--rojo)}
+.campos-entorno{display:grid; gap:8px; margin:14px 0; padding:12px 14px; border:1px solid var(--linea); border-radius:10px; background:var(--fondo)}
+.campos-entorno p{margin:0}
+.campos-entorno label{display:grid; grid-template-columns:minmax(180px,280px) 1fr; gap:14px; align-items:center; font-size:14px}
+.campos-entorno input,details.entorno textarea{font:13px var(--mono); padding:7px 9px; border:1px solid var(--linea); border-radius:8px; background:var(--papel); color:var(--tinta); width:100%; box-sizing:border-box}
+.campos-entorno button{justify-self:start}
+.charla{display:grid; gap:8px; margin:10px 0}
+.dicho{padding:9px 12px; border-radius:10px; white-space:pre-wrap; overflow-wrap:anywhere; max-width:90%}
+.dicho.yo{justify-self:end; background:var(--acento-suave)}
+.dicho.agente{justify-self:start; background:var(--fondo); border:1px solid var(--linea)}
+@media (max-width:700px){.pruebas-entorno li,.campos-entorno label{grid-template-columns:1fr} .pruebas-entorno li em{grid-column:1}}
 .web-vista{border:1px solid var(--linea); border-radius:10px; overflow:hidden; background:var(--papel); margin-bottom:12px}
 .web-barra{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:6px 10px; font-size:13px; color:var(--suave); border-bottom:1px solid var(--linea)}
 .web-vista{position:relative}

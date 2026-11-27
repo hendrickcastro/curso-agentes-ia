@@ -282,6 +282,107 @@ function pintarComparador() {
   pintar()
 }
 
+// ---------- entorno: pruebas del equipo y chat con el agente que lo arregla ----------
+async function leerFlujo(respuesta, cadaDato) {
+  const lector = respuesta.body.getReader()
+  const decodificador = new TextDecoder()
+  let resto = ''
+  for (;;) {
+    const { done, value } = await lector.read()
+    if (done) break
+    const partes = (resto + decodificador.decode(value, { stream: true })).split('\n\n')
+    resto = partes.pop()
+    for (const parte of partes) if (parte.startsWith('data: ')) cadaDato(JSON.parse(parte.slice(6)))
+  }
+}
+
+// **negrita** y `código` de la respuesta del agente, sin interpretar nada más.
+const conMarcas = (texto) => texto.split(/(\*\*[^*\n]+\*\*|`[^`\n]+`)/).map((t) => (t.startsWith('**') && t.length > 4 ? h('b', {}, t.slice(2, -2)) : t.startsWith('`') && t.length > 2 ? h('code', {}, t.slice(1, -1)) : t))
+
+function pintarEntorno(panel, estado) {
+  const historial = []
+  const lista = h('ul', { class: 'pruebas-entorno' })
+  const resumen = h('summary', {})
+  const campos = h('div', { class: 'campos-entorno' })
+  const charla = h('div', { class: 'charla' })
+  const texto = h('textarea', { rows: 3, placeholder: 'Por ejemplo: «Ahora estamos en Windows. Claude Code está en C:\\Users\\ana\\.local\\bin y Git en D:\\Herramientas\\Git. Arregla el entorno.»' })
+  const enviar = h('button', { class: 'primario' }, 'Enviar al agente')
+  const NOMBRES = { claude: 'Ejecutable de Claude Code (o su carpeta)', gitBash: 'bash.exe de Git para Windows', path: 'Carpetas extra para el PATH (separadas por ;)', modelo: 'Modelo' }
+
+  const pedir = async (url, opciones) => { const r = await fetch(url, opciones); const dato = await r.json(); if (!r.ok) throw new Error(dato.error ?? 'No se pudo'); return dato }
+  const revisar = async (boton, completo) => {
+    const antes = boton.textContent
+    boton.disabled = true; boton.textContent = completo ? 'Preguntando al modelo…' : 'Revisando…'
+    try { poner(await pedir(`/api/entorno${completo ? '?completo' : ''}`)) } catch (e) { alert(e.message) }
+    boton.disabled = false; boton.textContent = antes
+  }
+
+  function poner(nuevo) {
+    estado = nuevo
+    const fallan = estado.pruebas.filter((p) => !p.ok)
+    resumen.replaceChildren(h('span', { class: `pastilla ${fallan.length ? 'roja' : 'verde'}` }, fallan.length ? `Entorno: ${fallan.length} por arreglar` : 'Entorno listo'),
+      ` ${fallan.length ? fallan.map((p) => p.nombre).join(' · ') : `${estado.pruebas.length} pruebas pasan en este equipo`}`)
+    lista.replaceChildren(...estado.pruebas.map((p) => h('li', { class: p.ok ? 'bien' : 'mal' }, h('b', {}, `${p.ok ? '✔' : '✘'} ${p.nombre}`), h('span', {}, p.detalle), p.arreglo ? h('em', {}, p.arreglo) : null)))
+    const claves = ['claude', ...(estado.sistema === 'win32' ? ['gitBash'] : []), 'path', 'modelo']
+    const entradas = claves.map((clave) => [clave, h('input', { type: 'text', value: clave === 'path' ? (estado.ajustes.path ?? []).join(';') : (estado.ajustes[clave] ?? ''), placeholder: clave === 'modelo' ? estado.modelo : 'se busca solo' })])
+    const guardar = h('button', { onclick: async () => {
+      const cuerpo = Object.fromEntries(entradas.map(([clave, campo]) => [clave, clave === 'path' ? campo.value.split(';').map((x) => x.trim()).filter(Boolean) : campo.value.trim()]))
+      try { poner(await pedir('/api/entorno/ajustes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo) })); refrescarClaude() } catch (e) { alert(e.message) }
+    } }, 'Guardar y revisar')
+    campos.replaceChildren(h('p', { class: 'ayuda' }, 'Rutas de este equipo. Vacío significa que se busca solo. Se guardan en ', h('code', {}, 'entorno.json'), ', que no se sube al repositorio.'),
+      ...entradas.map(([clave, campo]) => h('label', {}, h('span', {}, NOMBRES[clave]), campo)), guardar)
+    panel.classList.toggle('sin-claude', fallan.length > 0)
+    if (fallan.length) detalles.open = true
+    const sinAgente = !estado.pruebas.find((p) => p.id === 'claude')?.ok
+    enviar.disabled = sinAgente
+    texto.disabled = sinAgente
+    aviso.hidden = !sinAgente
+  }
+  // Lo que sabe la cabecera de la página sobre Claude Code cambia al arreglar el entorno.
+  async function refrescarClaude() { try { const nuevo = await (await fetch('/api/estado')).json(); VIVO.claude = nuevo.claude; VIVO.modelo = nuevo.modelo; $('#estado-claude')?.replaceChildren(...lineaClaude()) } catch { /* se queda como estaba */ } }
+
+  async function hablar() {
+    const mensaje = texto.value.trim()
+    if (!mensaje) return
+    texto.value = ''
+    enviar.disabled = true; enviar.textContent = 'El agente está trabajando…'
+    const pasos = h('div', { class: 'registro' })
+    const ej = nuevaEjecucion()
+    charla.append(h('div', { class: 'dicho yo' }, mensaje), h('details', { class: 'pasos', open: '' }, h('summary', {}, 'Lo que hace el agente'), pasos))
+    try {
+      const respuesta = await fetch('/api/entorno/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mensaje, historial }) })
+      if (!respuesta.ok) throw new Error((await respuesta.json()).error ?? 'No se pudo')
+      await leerFlujo(respuesta, (dato) => {
+        if (dato.tipo === 'entorno') { poner(dato.estado); return }
+        if (dato.tipo === 'preparado') { ej.dir = dato.dir; return }
+        aplicar(dato, ej).filter((e) => e.t !== 'inicio').forEach((e) => { pasos.append(nodoEntrada(e)); pasos.scrollTop = pasos.scrollHeight })
+      })
+      pasos.parentElement.open = false
+      charla.append(h('div', { class: 'dicho agente' }, conMarcas(ej.respuesta || '(el agente no contestó nada)')))
+      historial.push({ quien: 'yo', texto: mensaje }, { quien: 'agente', texto: ej.respuesta })
+      refrescarClaude()
+    } catch (e) { charla.append(h('div', { class: 'dicho agente ev aviso' }, e.message)) }
+    enviar.textContent = 'Enviar al agente'
+    poner(estado)
+  }
+  enviar.onclick = hablar
+  texto.onkeydown = (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) hablar() }
+
+  const aviso = h('p', { class: 'ayuda', hidden: '' }, 'El chat usa Claude Code: mientras no aparezca, indica su ruta en el campo de arriba y pulsa «Guardar y revisar».')
+  const detalles = h('details', { class: 'entorno' }, resumen, lista,
+    h('p', {}, h('button', { onclick: (e) => revisar(e.currentTarget, false) }, 'Revisar de nuevo'), ' ', h('button', { onclick: (e) => revisar(e.currentTarget, true) }, 'Prueba completa: preguntar al modelo')),
+    campos,
+    h('h4', {}, 'Dile al agente que lo arregle'),
+    h('p', { class: 'ayuda' }, 'Cuéntale en qué equipo estás y dónde están las cosas. Busca lo que falte, lo comprueba y lo deja escrito en entorno.json; las pruebas se repiten al terminar. No instala nada: si hace falta, te da el comando.'),
+    charla, texto, h('p', {}, enviar), aviso)
+  panel.replaceChildren(detalles)
+  poner(estado)
+}
+
+const lineaClaude = () => (VIVO.claude
+  ? [h('span', { class: 'pastilla verde' }, 'Listo'), ` Claude Code ${VIVO.claude} · modelo `, h('code', {}, VIVO.modelo), '. Cada ejecución consume de tu suscripción y tarda entre 1 y 4 minutos.']
+  : [h('span', { class: 'pastilla roja' }, 'Falta Claude Code'), ' El servidor no lo encuentra en este equipo. Indícale dónde está en el panel «Entorno», justo encima.'])
+
 window.iniciarVivo = async function () {
   const vista = $('#vista-vivo')
   if (vista.childElementCount) return
@@ -291,15 +392,17 @@ window.iniciarVivo = async function () {
   if (!VIVO) {
     vista.append(h('div', { class: 'panel' }, h('h3', {}, 'Para ejecutar los ejemplos hay que arrancar el servidor local'),
       h('p', {}, 'Esta página está abierta como fichero y desde ahí no puede lanzar nada. En la carpeta del repositorio:'),
-      h('figure', { class: 'codigo' }, h('figcaption', {}, 'bash', h('button', { class: 'copiar' }, 'Copiar')), h('pre', {}, h('code', {}, 'node servidor.mjs'))),
+      h('figure', { class: 'codigo' }, h('figcaption', {}, 'bash', h('button', { class: 'copiar' }, 'Copiar')), h('pre', {}, h('code', {}, 'bash run.bash'))),
       h('p', {}, 'y abre ', h('a', { href: 'http://localhost:5400' }, 'http://localhost:5400'), '. Necesitas Node 20 o superior, git y Claude Code instalado con tu sesión iniciada (', h('code', {}, 'claude'), ' en la terminal). Los ejemplos usan tu suscripción y el modelo Opus 5.5.')))
     return
   }
+  const entorno = h('section', { class: 'panel', id: 'entorno-vivo' })
+  vista.append(entorno)
+  try { pintarEntorno(entorno, await (await fetch('/api/entorno')).json()) } catch { entorno.remove() }
   vista.append(h('div', { class: `panel ${VIVO.claude ? '' : 'sin-claude'}` },
     h('p', { class: 'num' }, 'El encargo, el mismo en todos los ejemplos'),
     h('figure', { class: 'codigo encargo' }, h('figcaption', {}, 'prompt', h('button', { class: 'copiar' }, 'Copiar')), h('pre', {}, h('code', {}, VIVO.encargo))),
-    VIVO.claude ? h('p', {}, h('span', { class: 'pastilla verde' }, 'Listo'), ` Claude Code ${VIVO.claude} · modelo `, h('code', {}, VIVO.modelo), '. Cada ejecución consume de tu suscripción y tarda entre 1 y 4 minutos.')
-      : h('p', {}, h('span', { class: 'pastilla roja' }, 'Falta Claude Code'), ' El servidor no encuentra el comando ', h('code', {}, 'claude'), '. Instálalo, inicia sesión y vuelve a arrancar el servidor.'),
+    h('p', { id: 'estado-claude' }, lineaClaude()),
     h('p', { class: 'ayuda' }, 'El proyecto de partida es una Pokédex de Kanto con buscador (06-en-vivo/pokedex). Cada ejecución trabaja sobre una copia propia y queda guardada como una versión (v1, v2…) que puedes volver a cargar, abrir y comparar. El agente trabaja aislado: puede lanzar cualquier comando, pero solo escribe dentro de su copia y no tiene red.'),
     h('p', {}, h('a', { href: `http://${location.hostname}:${VIVO.puertoWebs}/base/index.html`, target: '_blank', rel: 'noopener' }, 'Ver el proyecto de partida ↗'))))
   VIVO.ejemplos.forEach((ejemplo, i) => vista.append(pintarEjemplo(ejemplo, i)))

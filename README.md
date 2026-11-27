@@ -5,10 +5,14 @@ Material para transmitir al equipo el curso «Desarrollo de software con IA» (5
 ## Empieza aquí
 
 ```bash
-node servidor.mjs        # o: npm start
+bash run.bash            # comprueba el entorno, arranca y abre el navegador
 ```
 
-y abre <http://localhost:5400>. Hace falta Node 20 o superior y git; para la pestaña **En vivo**, además, [Claude Code](https://claude.com/claude-code) instalado y con tu sesión iniciada. No hay nada que instalar con npm.
+Vale igual en macOS, Linux y Windows (en Windows, desde Git Bash). `run.bash` busca los archivos del curso, Node, git y Claude Code; lo que no encuentra lo pregunta y lo recuerda. `bash run.bash --revisar` solo comprueba, sin arrancar. Si prefieres arrancar a mano: `node servidor.mjs` (o `npm start`) y abre <http://localhost:5400>.
+
+**¿Equipo nuevo o algo no arranca?** Arriba en la pestaña **En vivo** está el panel **Entorno**: pasa las pruebas del equipo (Node, git, archivos del curso, Claude Code, sesión y modelo) y tiene un chat para decirle al agente que lo arregle, por ejemplo: «Ahora estamos en Windows, Claude Code está en `C:\Users\ana\.local\bin` y Git en `D:\Herramientas\Git`; arregla el entorno». El agente comprueba las rutas, busca lo que falte y lo deja en `entorno.json` (local, fuera de git); no instala nada. Las mismas rutas se pueden escribir a mano en ese panel.
+
+ Hace falta Node 20 o superior y git; para la pestaña **En vivo**, además, [Claude Code](https://claude.com/claude-code) instalado y con tu sesión iniciada. No hay nada que instalar con npm.
 
 **En vivo** lanza los ejemplos con un clic, con tu propia suscripción de Claude Code y el modelo Opus 5.5 (`MODELO=otro-modelo node servidor.mjs` para cambiarlo).
 
