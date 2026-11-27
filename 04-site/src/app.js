@@ -51,7 +51,11 @@ function pintarIndice() {
 let quitados = memoria.leer('kt540.quitados', {})
 const claveDia = (d, n) => `d${d}:${n}`
 const diaQuitada = (d, n) => Boolean(quitados[claveDia(d, n)])
-const diasVivas = (d) => Array.from({ length: DATOS.total[d] }, (_, i) => i + 1).filter((n) => !diaQuitada(d, n))
+// Cada diapositiva pertenece a la ruta más corta en la que se explica; en una ruta solo cuentan las suyas.
+const rutaActual = () => Number(document.body.dataset.ruta) || 3
+const diaEnRuta = (d, n) => DATOS.donde[`${d}:${n}`].nivel <= rutaActual()
+const diasDeRuta = (d) => Array.from({ length: DATOS.total[d] }, (_, i) => i + 1).filter((n) => diaEnRuta(d, n))
+const diasVivas = (d) => diasDeRuta(d).filter((n) => !diaQuitada(d, n))
 const numeroDia = (d, n) => diasVivas(d).indexOf(n) + 1
 function alternar(clave) {
   if (quitados[clave]) delete quitados[clave]
@@ -145,10 +149,12 @@ $$('.vistas button').forEach((b) => b.addEventListener('click', () => ponerVista
 
 function pintarVideos() {
   const caja = $('#vista-videos')
-  caja.append(h('h1', {}, 'Vídeos explicativos'), h('p', {}, 'Un vídeo corto por módulo, con narración. Los guiones están en 03-videos/guiones.md.'))
+  const deRuta = DATOS.videos.filter((v) => v.nivel <= rutaActual())
+  const nombre = DATOS.rutas.find((r) => r.n === rutaActual()).nombre.toLowerCase()
+  caja.append(h('h1', {}, 'Vídeos explicativos'), h('p', {}, `Un vídeo corto por módulo, con narración. La ruta ${nombre} tiene ${deRuta.length} de los ${DATOS.videos.length}${deRuta.length < DATOS.videos.length ? '; el resto aparece al pasar a una ruta más larga' : ''}. Los guiones están en 03-videos/guiones.md.`))
   if (!DATOS.videos.length) caja.append(h('p', {}, 'Todavía no hay vídeos generados (ejecuta 03-videos/generar.sh y después 04-site/build.mjs).'))
   let orden = 0
-  for (const v of DATOS.videos) {
+  for (const v of deRuta) {
     const fuera = Boolean(quitados[`v${v.numero}`])
     caja.append(h('div', { class: `panel panel-video${fuera ? ' quitado' : ''}` }, h('h3', {}, fuera ? v.titulo : `${++orden} · ${v.titulo}`), h('button', { class: 'quitar', 'data-clave': `v${v.numero}` }, fuera ? 'Restaurar' : 'Quitar'), h('video', { controls: true, preload: 'none', src: `../03-videos/${v.fichero}` })))
   }
@@ -157,15 +163,19 @@ function pintarVideos() {
 function pintarDiapositivas() {
   const caja = $('#vista-diapos')
   const vivas = diasVivas(1).length + diasVivas(2).length
-  caja.append(h('h1', {}, 'Diapositivas originales'), h('p', {}, `${vivas} diapositivas${vivas < DATOS.total[1] + DATOS.total[2] ? ` (de ${DATOS.total[1] + DATOS.total[2]}; el resto están quitadas)` : ' del curso'}. Cada una enlaza con la sección de la guía donde se explica.`))
+  const deRuta = diasDeRuta(1).length + diasDeRuta(2).length
+  const todas = DATOS.total[1] + DATOS.total[2]
+  const nombre = DATOS.rutas.find((r) => r.n === rutaActual()).nombre.toLowerCase()
+  caja.append(h('h1', {}, 'Diapositivas originales'), h('p', {}, `${vivas} diapositivas en la ruta ${nombre}${deRuta < todas ? ` (de las ${todas} del curso; el resto aparece al pasar a una ruta más larga)` : ''}${vivas < deRuta ? `, con ${deRuta - vivas} quitadas` : ''}. Cada una enlaza con la sección de la guía donde se explica.`))
   for (const d of [1, 2]) {
-    caja.append(h('h2', {}, `Día ${d}`))
     const rejilla = h('div', { class: 'rejilla' })
-    for (let n = 1; n <= DATOS.total[d]; n++) {
+    if (!diasDeRuta(d).length) continue
+    caja.append(h('h2', {}, `Día ${d}`))
+    for (const n of diasDeRuta(d)) {
       const info = DATOS.donde[`${d}:${n}`]
       const fuera = diaQuitada(d, n)
       const k = numeroDia(d, n)
-      rejilla.append(h('button', { class: fuera ? 'quitado' : '', onclick: () => (document.body.classList.contains('editando') ? alternar(claveDia(d, n)) : abrirVisor(d, n)) }, h('img', { loading: 'lazy', src: rutaDia(d, n), alt: `Día ${d}, diapositiva ${fuera ? n : k}` }), h('span', {}, `${fuera ? 'Quitada' : `D${d}·${k}`}${!fuera && k !== n ? ` (era la ${n})` : ''} — ${info.etiqueta.split(' › ').slice(-1)[0]}`)))
+      rejilla.append(h('button', { class: fuera ? 'quitado' : '', onclick: () => (document.body.classList.contains('editando') ? alternar(claveDia(d, n)) : abrirVisor(d, n)) }, h('img', { loading: 'lazy', src: rutaDia(d, n), alt: `Día ${d}, diapositiva ${fuera ? n : k}` }), h('span', {}, `${fuera ? 'Quitada' : `D${d}·${k}`}${!fuera && k !== diasDeRuta(d).indexOf(n) + 1 ? ` (era la ${diasDeRuta(d).indexOf(n) + 1})` : ''} — ${info.etiqueta.split(' › ').slice(-1)[0]}`)))
     }
     caja.append(rejilla)
   }
@@ -196,7 +206,7 @@ function moverVisor(paso) {
     n += paso
     if (n < 1) { d = d === 1 ? 2 : 1; n = DATOS.total[d] }
     if (n > DATOS.total[d]) { d = d === 1 ? 2 : 1; n = 1 }
-    if (!diaQuitada(d, n)) break
+    if (!diaQuitada(d, n) && diaEnRuta(d, n)) break
   }
   abrirVisor(d, n)
 }

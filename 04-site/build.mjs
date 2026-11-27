@@ -156,7 +156,8 @@ const donde = new Map()
 for (const modulo of modulos) {
   const apuntar = (nodo, etiqueta) => nodo.refs.forEach(({ d, n }) => {
     const clave = `${d}:${n}`
-    if (!donde.has(clave)) donde.set(clave, { id: nodo.id, etiqueta, nivel: nodo.nivel })
+    // si una diapositiva se cita en varios sitios, manda el de la ruta más corta: ahí es donde entra en el curso
+    if (!donde.has(clave) || nodo.nivel < donde.get(clave).nivel) donde.set(clave, { id: nodo.id, etiqueta, nivel: nodo.nivel })
   })
   for (const seccion of modulo.hijos) {
     for (const s of seccion.hijos) apuntar(s, `${modulo.titulo} › ${seccion.titulo} › ${s.titulo}`)
