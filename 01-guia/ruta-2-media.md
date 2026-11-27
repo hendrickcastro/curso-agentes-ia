@@ -1,6 +1,6 @@
 # Desarrollo de software con IA · Ruta media
 
-> Con el detalle, las tablas y las prácticas. Duración orientativa para explicarla: media jornada. Las referencias (D1·34) remiten a las diapositivas originales en `00-material-original/diapositivas/`.
+> Todos los grandes temas de desarrollo, con el detalle y las prácticas. Duración orientativa para explicarla: media jornada. Las referencias (D1·34) remiten a las diapositivas originales en `00-material-original/diapositivas/`.
 
 # La tesis: pedir no es delegar
 

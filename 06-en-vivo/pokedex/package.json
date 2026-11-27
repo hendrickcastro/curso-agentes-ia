@@ -1,0 +1,11 @@
+{
+  "name": "pokedex-kanto",
+  "private": true,
+  "type": "module",
+  "description": "Pokédex de Kanto: web estática sin dependencias ni compilación. Se abre sirviendo esta carpeta.",
+  "scripts": {
+    "red": "node tools/comprobar.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node tools/comprobar.mjs && node --test test/*.test.mjs"
+  }
+}

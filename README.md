@@ -10,18 +10,24 @@ node servidor.mjs        # o: npm start
 
 y abre <http://localhost:5400>. Hace falta Node 20 o superior y git; para la pestaña **En vivo**, además, [Claude Code](https://claude.com/claude-code) instalado y con tu sesión iniciada. No hay nada que instalar con npm.
 
-**En vivo** lanza los ejemplos con un clic, con tu propia suscripción de Claude Code y el modelo Opus 5.5 (`MODELO=otro-modelo node servidor.mjs` para cambiarlo): el mismo prompt dos veces, sin la pieza y con ella, y ves en directo cada fichero que lee, cada comando y cada parada de un hook, y al final el resultado y las comprobaciones de las dos columnas lado a lado.
+**En vivo** lanza los ejemplos con un clic, con tu propia suscripción de Claude Code y el modelo Opus 5.5 (`MODELO=otro-modelo node servidor.mjs` para cambiarlo).
+
+Todos los ejemplos usan **el mismo encargo**, el del curso: «Añade al proyecto web una tabla interactiva con las ventajas y desventajas entre todos los tipos de Pokémon». Se lanza dos veces sobre una Pokédex de Kanto ([`06-en-vivo/pokedex`](06-en-vivo/pokedex)), una sin la pieza y otra con ella:
 
 | Ejemplo | Sin | Con | Qué se ve |
 |---|---|---|---|
-| Contexto | Solo el código | `AGENTS.md` y `CONTEXT.md` | La respuesta sale de una decisión escrita, no de lo que deduce |
-| Reglas | Sin `AGENTS.md` | Con `AGENTS.md` | El criterio entra en `specs/` antes que el código |
-| Skills | Sin la skill | Con `carta-pokemon` | La carta de Pikachu: formato inventado frente al formato y los datos del equipo |
-| Hooks | Sin hook | Con hook | El hook detiene la edición y el agente cambia de rumbo |
-| Workflow | Encargo directo | `/implementar` | Deja un `plan.md` revisable con las decisiones que tomó |
+| Contexto | Solo el código | `CONTEXT.md` | El nombre que decidió producto, 15 tipos en vez de 18, «×½» |
+| Reglas | Sin `AGENTS.md` | Con `AGENTS.md` | `NOVEDADES.md`, el criterio en `specs/`, el enlace en el menú |
+| Skills | Sin la skill | Con `pantalla-nueva` | La tabla con el patrón del equipo: leyenda, resaltado, filtro en la dirección |
+| Hooks | Sin red | Con hook | El hook detiene la edición y el agente corrige |
+| Workflow | Encargo directo | `/implementar` | Un `plan.md` revisable con las decisiones que tomó |
 | Harness | Solo el modelo | Todo junto | Pedir frente a delegar |
 
-Cada columna trabaja sobre una copia temporal del proyecto `demo`, no sobre tu repositorio. El servidor solo escucha en tu equipo y solo ejecuta los ejemplos de [`06-en-vivo/ejemplos.mjs`](06-en-vivo/ejemplos.mjs); no acepta prompts ni comandos desde el navegador. Los resultados dependen del modelo: no saldrán idénticos en cada ejecución.
+En cada columna ves **la web que dejó el agente**, funcionando dentro de la página y con su propio enlace (`http://localhost:5401/<versión>/`), todo lo que hizo paso a paso y unas comprobaciones que lanza el servidor.
+
+**Cada ejecución queda guardada como una versión** (v1, v2…) en `06-en-vivo/ejecuciones/`, que no se sube a git. Puedes volver a cargar cualquiera con el selector de su columna, borrarla, y poner dos versiones cualesquiera lado a lado en el comparador del final de la página.
+
+El agente trabaja sobre una copia propia del proyecto, no sobre tu repositorio. En macOS y Linux corre con el aislamiento de Claude Code: puede lanzar cualquier comando, pero solo escribe dentro de esa copia y no tiene red. El servidor solo escucha en tu equipo y solo ejecuta los ejemplos de [`06-en-vivo/ejemplos.mjs`](06-en-vivo/ejemplos.mjs); no acepta prompts ni comandos desde el navegador. Los resultados dependen del modelo: no saldrán idénticos en cada ejecución.
 
 Sin servidor también funciona todo lo demás:
 
@@ -40,19 +46,18 @@ El curso es **práctico y en línea**: se da desde la vista Taller, cada persona
 | **Vídeos** | Trece vídeos narrados, uno por módulo (unos 14 minutos en total). |
 | **Diapositivas** | Las 166 originales, cada una con el enlace a la sección que la explica. |
 
-## Cuatro rutas
+## Tres rutas
 
 El contenido está escrito una sola vez y etiquetado por ruta. Se cambia con los botones del site (o las teclas `1`, `2`, `3`).
 
 | Ruta | Para quién | Qué incluye | Duración orientativa |
 |---|---|---|---|
-| **Resumida** | Desarrolladores que necesitan lo esencial | Solo los grandes temas de desarrollo: la tesis, contexto, RPI, garantías y ratchet, guardarraíles y hooks, skills y workflow, especificación, verificación por carriles. 10 ejercicios | 100 min |
-| **Media** | El equipo que va a adoptarlo | Añade vibecoding, el detalle de cada principio, las tablas de herramientas, las prácticas, worktrees y costes, mantenibilidad y llevarlo al equipo. 14 ejercicios | Media jornada |
+| **Resumida** | Quien quiere ver cómo se usa el agente | **Solo lo que se hace en vivo**: contexto, reglas, skills, hooks, workflow y harness. Los seis ejemplos en vivo, los módulos de la guía que los explican y seis ejercicios del taller | Unas 2 horas |
+| **Media** | El equipo que va a adoptarlo | Añade todos los grandes temas de desarrollo: la tesis, vibecoding, garantías y ratchet, especificación, verificación por carriles, worktrees y costes, y llevarlo al equipo. 14 ejercicios | Media jornada |
 | **Completa** | Quien vaya a impartirlo o quiera todo | Cada tema y cada diapositiva: debates, otros temas, riesgos, lo que viene y recursos. 15 ejercicios | Dos jornadas |
 
-| **Agente** | Quien solo quiere aprender a usar el agente | Contexto, reglas, skills, hooks, workflow y harness: los ejemplos en vivo, cuatro ejercicios del taller y los módulos de la guía que los explican | Unas 2 horas |
 
-Las mismas rutas en Markdown ([`ruta-4-agente.md`](01-guia/ruta-4-agente.md) incluida): [`ruta-1-resumida.md`](01-guia/ruta-1-resumida.md), [`ruta-2-media.md`](01-guia/ruta-2-media.md) y [`ruta-3-completa.md`](01-guia/ruta-3-completa.md).
+Las mismas rutas en Markdown: [`ruta-1-resumida.md`](01-guia/ruta-1-resumida.md), [`ruta-2-media.md`](01-guia/ruta-2-media.md) y [`ruta-3-completa.md`](01-guia/ruta-3-completa.md).
 
 ## Qué hay en cada carpeta
 
@@ -63,7 +68,7 @@ Las mismas rutas en Markdown ([`ruta-4-agente.md`](01-guia/ruta-4-agente.md) inc
 | [`02-ejemplos-codigo/`](02-ejemplos-codigo/README.md) | `demo/`: mini proyecto ejecutable sin dependencias (garantías, ratchet, hooks, skill, subagente, especificación, carriles) con seis experimentos. `referencia/`: scripts de worktrees. |
 | [`03-videos/`](03-videos/) | Los vídeos, sus guiones ([`guiones.md`](03-videos/guiones.md)) y el generador. |
 | [`04-site/`](04-site/) | El site (`index.html`) y su generador (`build.mjs`, `src/`). |
-| [`06-en-vivo/`](06-en-vivo/) y `servidor.mjs` | Los ejemplos en vivo (qué se quita en cada variante y qué se comprueba) y el servidor local que los lanza. |
+| [`06-en-vivo/`](06-en-vivo/) y `servidor.mjs` | `pokedex/`: el proyecto web de partida, con su red, hooks, reglas, contexto y skills. `ejemplos.mjs`: qué se quita en cada variante. `comprobar/`: lo que se comprueba al terminar. `servidor.mjs`: el servidor local que lo lanza todo. |
 | [`05-como-impartirlo/`](05-como-impartirlo/) | Agendas para las tres rutas, guion del facilitador y cuestionario de repaso. |
 
 ## Cobertura
@@ -86,5 +91,5 @@ node 04-site/build.mjs
 ## Qué es del curso y qué se ha añadido
 
 - **Del curso:** todo el contenido conceptual, las tablas, las prácticas y los debates; y los fragmentos de configuración (ESLint, dependency-cruiser, Stryker, hooks de las cuatro herramientas, skills de RPI, subagentes, workflow), tomados del repositorio público de prácticas `540/ai-development-training`.
-- **Añadido para la transferencia:** las analogías, el proyecto `demo/`, los simuladores del laboratorio (sus cifras son supuestos ilustrativos, no medidas), los ejemplos en vivo y sus skills (`carta-pokemon`, `implementar`), el script de worktrees, el ADR y la plantilla de especificación de ejemplo, y la sección «Por dónde empezar el lunes».
+- **Añadido para la transferencia:** las analogías, el proyecto `demo/`, los simuladores del laboratorio (sus cifras son supuestos ilustrativos, no medidas), los ejemplos en vivo con su proyecto `pokedex` y sus skills (`pantalla-nueva`, `implementar`), el script de worktrees, el ADR y la plantilla de especificación de ejemplo, y la sección «Por dónde empezar el lunes».
 - **Una diferencia a tener en cuenta:** las diapositivas usan una Pokédex como proyecto de prácticas; el repositorio público contiene hoy un comparador de coches con la misma progresión de ramas.

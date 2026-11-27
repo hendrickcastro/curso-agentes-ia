@@ -1,0 +1,11 @@
+{
+  "funcionalidad": "Pokédex de Kanto",
+  "criterios": [
+    { "id": "AC1", "texto": "Busca por cualquier parte del nombre sin distinguir mayúsculas: «CHU» encuentra a Pikachu y a Raichu.",
+      "dado": { "consulta": "CHU" }, "entonces": { "resultados": ["Pikachu", "Raichu"] } },
+    { "id": "AC2", "texto": "Con menos de dos letras no busca.",
+      "dado": { "consulta": "p" }, "entonces": { "haBuscado": false } },
+    { "id": "AC3", "texto": "Los resultados salen en el orden de la Pokédex nacional.",
+      "dado": { "consulta": "ma" }, "entonces": { "resultados": ["Charmander", "Machop", "Magnemite"] } }
+  ]
+}

@@ -20,15 +20,17 @@ const DIR_MODULOS = join(RAIZ, '01-guia/modulos')
 const TOTAL = { 1: 86, 2: 80 }
 const NIVEL = { R: 1, M: 2, C: 3 }
 const RUTAS = [
-  { n: 1, id: 'resumida', nombre: 'Resumida', lema: 'Solo los grandes temas de desarrollo', duracion: '100 min' },
-  { n: 2, id: 'media', nombre: 'Media', lema: 'Con el detalle, las tablas y las prácticas', duracion: 'media jornada' },
+  { n: 1, id: 'resumida', nombre: 'Resumida', lema: 'Solo lo que se hace en vivo: contexto, reglas, skills, hooks, workflow y harness', duracion: 'unas 2 horas' },
+  { n: 2, id: 'media', nombre: 'Media', lema: 'Todos los grandes temas de desarrollo, con el detalle y las prácticas', duracion: 'media jornada' },
   { n: 3, id: 'completa', nombre: 'Completa', lema: 'Cada tema y cada diapositiva del curso', duracion: 'dos jornadas' },
-  { n: 4, id: 'agente', nombre: 'Agente', lema: 'Solo cómo se usa el agente: contexto, reglas, skills, hooks, workflow y harness, con ejemplos en vivo', duracion: 'unas 2 horas' },
 ]
 
-const MODULOS_AGENTE = ['02', '03', '05', '06']
-const enAgente = (nodo, numero) => MODULOS_AGENTE.includes(numero) && nodo.nivel <= 2
-const incluye = (nodo, ruta, numero) => (ruta.n === 4 ? enAgente(nodo, numero) : nodo.nivel <= ruta.n)
+// La ruta resumida es solo lo que se hace en vivo: en estos módulos se respeta la etiqueta {R};
+// en los demás, lo que estaba marcado {R} baja a la ruta media.
+const MODULOS_EN_VIVO = ['02', '03', '05', '06']
+const nivelDe = (etiqueta, numero) => (NIVEL[etiqueta] === 1 && !MODULOS_EN_VIVO.includes(numero) ? 2 : NIVEL[etiqueta])
+const enAgente = () => false
+const incluye = (nodo, ruta) => nodo.nivel <= ruta.n
 const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 const slug = (t) => t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 const RE_REF = /\[D([12]):(\d+)(?:-(\d+))?\]/g
@@ -130,14 +132,14 @@ function leerModulo(fichero) {
     const [, almohadillas, titulo, etiqueta, refs] = m
     const nodo = { titulo, etiqueta, refs: expandir(refs), lineas: [], hijos: [] }
     if (almohadillas.length === 1) {
-      modulo = { ...nodo, numero, fichero, nivel: NIVEL[etiqueta ?? 'R'], id: `m${numero}` }
+      modulo = { ...nodo, numero, fichero, nivel: nivelDe(etiqueta ?? 'R', numero), id: `m${numero}` }
       seccion = sub = null
     } else if (almohadillas.length === 2) {
-      seccion = { ...nodo, nivel: Math.max(modulo.nivel, NIVEL[etiqueta] ?? modulo.nivel), id: `m${numero}-${slug(titulo)}` }
+      seccion = { ...nodo, nivel: Math.max(modulo.nivel, nivelDe(etiqueta, numero) ?? modulo.nivel), id: `m${numero}-${slug(titulo)}` }
       modulo.hijos.push(seccion)
       sub = null
     } else {
-      sub = { ...nodo, nivel: Math.max(seccion.nivel, NIVEL[etiqueta] ?? seccion.nivel), id: `${seccion.id}-${slug(titulo)}` }
+      sub = { ...nodo, nivel: Math.max(seccion.nivel, nivelDe(etiqueta, numero) ?? seccion.nivel), id: `${seccion.id}-${slug(titulo)}` }
       seccion.hijos.push(sub)
     }
   }
@@ -235,7 +237,7 @@ const ejercicios = readFileSync(join(RAIZ, '01-guia/taller.md'), 'utf8').split(/
   for (const p of partes) if (!CLASE_PARTE[p.nombre]) throw new Error(`Taller: parte desconocida «${p.nombre}» en «${titulo}»`)
   if (meta.guia && !modulos.some((m) => m.id === meta.guia || m.hijos.some((s) => s.id === meta.guia))) throw new Error(`Taller: «${titulo}» enlaza a una sección que no existe: ${meta.guia}`)
   if (meta.lab && !NOMBRE_LAB[meta.lab]) throw new Error(`Taller: «${titulo}» enlaza a una herramienta que no existe: ${meta.lab}`)
-  return { n: i, id: `t${i}`, titulo, nivel: NIVEL[etiqueta], meta, partes, agente: meta.agente === 'si' }
+  return { n: i, id: `t${i}`, titulo, nivel: NIVEL[etiqueta] === 1 && meta.vivo !== 'si' ? 2 : NIVEL[etiqueta], meta, partes, agente: false }
 })
 const taller = ejercicios.map((e) => `<article class="ejercicio" data-nivel="${e.nivel}"${e.agente ? ' data-agente' : ''} id="${e.id}" data-min="${e.meta.tiempo}">
 <header><p class="num">Ejercicio <span class="n-ej">${e.n + 1}</span> · ${e.meta.tiempo} min · ${esc(e.meta.necesita)}</p><h2>${enLinea(e.titulo)}<span class="marca n${e.nivel}">${nombreRuta[e.nivel]}</span></h2><button class="quitar" data-clave="${e.id}"></button></header>
@@ -245,7 +247,7 @@ ${e.partes.map((p) => `<div class="parte ${CLASE_PARTE[p.nombre]}"><h3>${p.nombr
 
 const cuenta = (ruta) => modulos.flatMap((m) => m.hijos.map((s) => [s, m.numero])).filter(([s, numero]) => incluye(s, ruta, numero)).length
 const datos = {
-  rutas: RUTAS.map((r) => { const suyos = ejercicios.filter((e) => (r.n === 4 ? e.agente : e.nivel <= r.n)); return { ...r, secciones: cuenta(r), modulos: modulos.filter((m) => incluye(m, r, m.numero)).length, ejercicios: suyos.length, minutosTaller: suyos.reduce((s, e) => s + Number(e.meta.tiempo), 0) } }),
+  rutas: RUTAS.map((r) => { const suyos = ejercicios.filter((e) => e.nivel <= r.n); return { ...r, secciones: cuenta(r), modulos: modulos.filter((m) => incluye(m, r, m.numero)).length, ejercicios: suyos.length, minutosTaller: suyos.reduce((s, e) => s + Number(e.meta.tiempo), 0) } }),
   total: TOTAL,
   donde: Object.fromEntries(donde),
   videos: modulos.filter((m) => videoDe(m.numero)).map((m) => ({ numero: m.numero, titulo: m.titulo, fichero: videoDe(m.numero), nivel: m.nivel })),

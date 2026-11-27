@@ -44,7 +44,6 @@ main{padding:26px clamp(16px,4vw,48px) 120px; min-width:0}
 
 /* filtro de rutas */
 body[data-ruta="1"] [data-nivel="2"], body[data-ruta="1"] [data-nivel="3"], body[data-ruta="2"] [data-nivel="3"]{display:none}
-body[data-ruta="4"] [data-nivel]:not([data-agente]){display:none}
 
 .modulo{background:var(--papel); border:1px solid var(--linea); border-radius:14px; padding:26px clamp(16px,3vw,36px); margin-bottom:26px}
 .modulo .num{margin:0; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--suave)}
@@ -95,7 +94,8 @@ body.editando .rejilla button.quitado::after{content:"Restaurar"}
 .ejemplo-vivo>figure pre{white-space:pre-wrap; overflow-wrap:anywhere}
 .dos-columnas{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:16px}
 .col-vivo{border:1px solid var(--linea); border-radius:12px; padding:14px; min-width:0; background:var(--fondo)}
-.col-cabecera{display:flex; justify-content:space-between; align-items:center; gap:8px}
+.col-cabecera{display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap}
+.col-cabecera h3{white-space:nowrap}
 .col-cabecera h3{margin:0}
 .col-botones{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end}
 .col-botones button:not(.primario){font-size:13px}
@@ -118,6 +118,19 @@ body.editando .rejilla button.quitado::after{content:"Restaurar"}
 .comprobacion summary small{color:var(--suave)}
 .veredicto{padding:10px 14px; border-radius:10px; font-weight:600}
 .sin-claude{border-color:var(--rojo)}
+.web-vista{border:1px solid var(--linea); border-radius:10px; overflow:hidden; background:var(--papel); margin-bottom:12px}
+.web-barra{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:6px 10px; font-size:13px; color:var(--suave); border-bottom:1px solid var(--linea)}
+.web-vista{position:relative}
+.web-marco{height:470px; overflow:hidden}
+.web-vista iframe{display:block; width:166.67%; height:783px; border:0; background:var(--papel); transform:scale(.6); transform-origin:0 0}
+.col-cuerpo{min-width:0}
+.versiones{width:auto; max-width:230px; font-size:13px; padding:5px 8px}
+.selectores .versiones{max-width:none; width:100%}
+.sin-ejecutar{color:var(--suave); padding:40px 0; text-align:center; border:1px dashed var(--linea); border-radius:10px}
+details.pasos{margin-top:10px; border:1px solid var(--linea); border-radius:8px; padding:6px 10px; background:var(--papel)}
+details.pasos>summary{cursor:pointer; font-weight:600; font-size:14px}
+details.pasos .registro{margin-top:8px}
+.encargo pre{white-space:pre-wrap; font-size:15px}
 button:disabled{opacity:.6; cursor:progress}
 @media (max-width:900px){.dos-columnas{grid-template-columns:1fr}}
 

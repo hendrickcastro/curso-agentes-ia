@@ -1,119 +1,119 @@
-// Los ejemplos en vivo: el MISMO prompt lanzado dos veces, cambiando solo lo que rodea al agente.
-// Cada variante parte de una copia limpia de 02-ejemplos-codigo/demo a la que se le quitan piezas
-// (y siempre el README.md, que explica el curso y le chivaría las reglas al agente).
-//
-// Comprobaciones (las ejecuta el servidor al terminar, no el agente):
-//   { cmd, espera: 'codigo0' | 'salida' | 'vacia' }   un comando en la copia de trabajo
-//   { existe: 'ruta' }                                 que el agente haya dejado ese fichero
-//   { respuesta: 'regex' }                             que la respuesta final contenga algo
-// {REPO} se sustituye por la raíz de este repositorio.
+// Los ejemplos en vivo: SIEMPRE el mismo encargo (el del curso), lanzado dos veces
+// cambiando solo lo que rodea al agente. Cada variante parte de una copia limpia de
+// 06-en-vivo/pokedex a la que se le quitan piezas (`quitar`) o se le reescribe algún fichero (`escribir`).
+// `copiar` mueve ficheros dentro de la copia antes de quitar nada ({ destino: origen }); `ocultar` los deja fuera de git.
+// Las comprobaciones son nombres de 06-en-vivo/comprobar/revisar.mjs: las lanza el servidor, no el agente.
 
-const REGLAS = ['AGENTS.md', 'CLAUDE.md', 'CONTEXT.md']
+export const ENCARGO = 'Añade al proyecto web una tabla interactiva con las ventajas y desventajas entre todos los tipos de Pokémon.'
+
+const REGLAS = ['AGENTS.md', 'CLAUDE.md']
+const CONTEXTO = ['CONTEXT.md']
 const HOOKS = ['.claude/settings.json']
-const SKILL_CARTA = ['.claude/skills/carta-pokemon']
+const SKILL_PANTALLA = ['.claude/skills/pantalla-nueva']
 const SKILL_IMPLEMENTAR = ['.claude/skills/implementar']
-const TODO = [...REGLAS, '.claude']
+const SKILLS = ['.claude/skills']
+// Sin red: ni comprobaciones ni hooks. El package.json se queda solo con los tests.
+const RED = ['tools', '.claude/settings.json']
+const PAQUETE_SIN_RED = `${JSON.stringify({ name: 'pokedex-kanto', private: true, type: 'module', scripts: { test: 'node --test test/*.test.mjs' } }, null, 2)}\n`
+// Solo el hook: la red no está en tools/ ni en package.json. Nadie le ha contado al agente que existe;
+// se entera cuando el hook lo detiene. Es lo que pasa cuando un equipo añade un guardarraíl sin tocar las reglas.
+const AJUSTES_HOOK = `${JSON.stringify({
+  // El guardarraíl es una caja negra para el agente, como lo sería un servicio del equipo: no puede leerlo ni tocarlo.
+  permissions: { deny: ['Read(./.claude/**)', 'Edit(./.claude/**)'] },
+  hooks: {
+  PostToolUse: [{ matcher: 'Edit|Write|MultiEdit', hooks: [{ type: 'command', command: 'node .claude/hooks/guardarrail.mjs edit' }] }],
+  Stop: [{ hooks: [{ type: 'command', command: 'node .claude/hooks/guardarrail.mjs stop' }] }],
+} }, null, 2)}\n`
+const SOLO_HOOK = {
+  copiar: { '.claude/hooks/comprobar.mjs': 'tools/comprobar.mjs', '.claude/hooks/guardarrail.mjs': 'tools/guardarrail.mjs' },
+  quitar: [...REGLAS, ...CONTEXTO, ...SKILLS, 'tools'],
+  escribir: { 'package.json': PAQUETE_SIN_RED, '.claude/settings.json': AJUSTES_HOOK },
+  ocultar: ['.claude/'], // como la configuración de equipo: está en la máquina, no entre los ficheros del proyecto
+}
+const SOLO_CODIGO = { quitar: [...REGLAS, ...CONTEXTO, '.claude', 'tools'], escribir: { 'package.json': PAQUETE_SIN_RED } }
 
-const VERDE = { nombre: 'Tests y ratchet en verde', cmd: 'npm run -s check', espera: 'codigo0' }
-const CRITERIO = { nombre: 'El comportamiento nuevo entró como criterio en specs/', cmd: 'git status --short -- specs', espera: 'salida' }
-const TESTS_INTACTOS = { nombre: 'No cambió ni borró tests que ya existían', cmd: 'node "{REPO}/06-en-vivo/comprobar/testsIntactos.mjs"', espera: 'codigo0' }
-// Una convención del equipo que solo está en AGENTS.md: no se puede deducir leyendo el código.
-const NOVEDADES = { nombre: 'Dejó la línea para producto en NOVEDADES.md (acuerdo del equipo)', existe: 'NOVEDADES.md' }
-const FRONTERA = { nombre: 'Las vistas no llaman a la API', cmd: 'npm run -s ratchet', espera: 'codigo0' }
-
-const LIMITE = 'Haz que el buscador muestre como máximo 3 resultados y avise de cuántos más hay.'
+const C = {
+  tabla: ['tabla', 'Ha añadido la tabla a la web'],
+  sintaxis: ['sintaxis', 'El JavaScript se puede cargar (sin errores de sintaxis)'],
+  nombre: ['nombre', 'La llama «Tabla de combate», como decidió producto'],
+  kanto: ['kanto', 'Solo los 15 tipos de Kanto clásico'],
+  mitad: ['mitad', 'Escribe ×½, no 0,5'],
+  novedades: ['novedades', 'Dejó la línea para producto en NOVEDADES.md'],
+  criterio: ['criterio', 'El comportamiento nuevo tiene criterio en specs/'],
+  menu: ['menu', 'La pantalla está enlazada en el menú'],
+  plan: ['plan', 'Dejó un plan.md que se puede revisar'],
+  red: ['red', 'Pasa la red del equipo (capas, colores y tamaño)'],
+  patron: ['patron', 'Sigue el patrón de tabla del equipo'],
+  tests: ['tests', 'Tests en verde y sin tocar los que ya existían'],
+}
+const comprobaciones = (...claves) => claves.map((k) => ({ id: C[k][0], nombre: C[k][1] }))
 
 export const EJEMPLOS = [
   {
-    id: 'contexto',
-    tema: 'Contexto',
-    titulo: 'Lo que no está escrito no existe',
-    idea: 'El agente solo sabe lo que cabe en su ventana. Un fichero corto que apunta al conocimiento del negocio cambia la respuesta.',
-    prompt: 'Sin escribir código: ¿en qué orden deben salir los resultados del buscador y quién decide el mensaje de «sin resultados»? Responde en tres líneas y di de qué fichero sacas cada cosa.',
-    mira: 'Qué ficheros lee antes de contestar, y si la respuesta sale de una decisión escrita o de lo que deduce del código.',
+    id: 'contexto', tema: 'Contexto', titulo: 'Lo que no está escrito no existe',
+    idea: 'El agente solo sabe lo que cabe en su ventana. Producto decidió cómo se llama la tabla, qué tipos entran y cómo se escribe la mitad de daño; nada de eso está en el código.',
+    mira: 'El título de la pantalla, cuántos tipos tiene la tabla (15 o 18) y cómo escribe la mitad de daño.',
     guia: 'm02',
     variantes: [
-      { id: 'sin', nombre: 'Sin contexto', rodea: 'Solo el código. Sin AGENTS.md, CLAUDE.md ni CONTEXT.md.', quitar: REGLAS },
-      { id: 'con', nombre: 'Con contexto', rodea: 'CLAUDE.md → AGENTS.md → CONTEXT.md, con el glosario y las decisiones de negocio.', quitar: [] },
+      { id: 'sin', nombre: 'Sin contexto', rodea: 'Solo el código. Sin CONTEXT.md, sin reglas, sin hooks y sin skills.', quitar: [...REGLAS, ...CONTEXTO, '.claude'] },
+      { id: 'con', nombre: 'Con contexto', rodea: 'Lo mismo, más CONTEXT.md con el glosario y las decisiones de producto.', quitar: ['AGENTS.md', '.claude'], escribir: { 'CLAUDE.md': '@CONTEXT.md\n' } },
     ],
-    comprobaciones: [
-      { nombre: 'Contesta «orden de la Pokédex nacional»', respuesta: 'pok[eé]dex nacional' },
-      { nombre: 'Sabe que el mensaje lo decide producto', respuesta: 'producto' },
-    ],
+    comprobaciones: comprobaciones('tabla', 'sintaxis', 'nombre', 'kanto', 'mitad'),
   },
   {
-    id: 'reglas',
-    tema: 'Reglas',
-    titulo: 'Las reglas del equipo, escritas',
-    idea: 'AGENTS.md lleva los acuerdos del equipo con su porqué. Un buen modelo deduce mucho leyendo el código, pero un acuerdo que no está escrito en ningún sitio no lo puede adivinar. Son probabilísticas: casi siempre se cumplen.',
-    prompt: LIMITE,
-    mira: 'El equipo acordó anotar cada cambio en NOVEDADES.md para producto. Sin reglas el agente no puede saberlo; con reglas lo hace sin que se lo pidas. Mira también qué decide sin preguntar (el texto del aviso, dónde va el límite).',
+    id: 'reglas', tema: 'Reglas', titulo: 'Los acuerdos del equipo, escritos',
+    idea: 'AGENTS.md lleva los acuerdos del equipo con su porqué. Un buen modelo deduce mucho leyendo el código, pero un acuerdo que no está en ningún fichero no lo puede adivinar. Son probabilísticas: casi siempre se cumplen.',
+    mira: 'Si anota el cambio en NOVEDADES.md, si lo especifica antes de programarlo y si enlaza la pantalla en el menú.',
     guia: 'm05-tres-escalones',
     variantes: [
-      { id: 'sin', nombre: 'Sin reglas', rodea: 'Solo el código. Sin AGENTS.md, sin contexto y sin hooks.', quitar: TODO },
-      { id: 'con', nombre: 'Con reglas', rodea: 'AGENTS.md y CONTEXT.md. Sin hooks: aquí solo actúan las reglas escritas.', quitar: HOOKS },
+      { id: 'sin', nombre: 'Sin reglas', rodea: 'Solo el código y la red. Sin AGENTS.md, sin contexto, sin hooks y sin skills.', quitar: [...REGLAS, ...CONTEXTO, '.claude'] },
+      { id: 'con', nombre: 'Con reglas', rodea: 'Lo mismo, más AGENTS.md con los acuerdos del equipo. Sin hooks: aquí solo actúan las reglas escritas.', quitar: [...CONTEXTO, '.claude'] },
     ],
-    comprobaciones: [NOVEDADES, CRITERIO, TESTS_INTACTOS, VERDE],
+    comprobaciones: comprobaciones('tabla', 'sintaxis', 'novedades', 'criterio', 'menu', 'red'),
   },
   {
-    id: 'skill',
-    tema: 'Skills',
-    titulo: 'La carta de Pikachu, sin skill y con skill',
-    idea: 'Una skill es un proceso tuyo empaquetado: instrucciones, una plantilla y scripts. Al arrancar solo entran su nombre y su descripción; el resto se carga cuando hace falta.',
-    prompt: 'Hazme la carta de Pikachu y guárdala en cartas/pikachu.md',
-    mira: 'Sin skill inventa el formato y los datos. Con skill carga el SKILL.md, saca los datos con un script, rellena la plantilla del equipo y se valida sola.',
+    id: 'skill', tema: 'Skills', titulo: 'La misma tabla, con el patrón del equipo',
+    idea: 'Una skill es un proceso tuyo empaquetado: instrucciones, una hoja de estilos y un validador. Al arrancar solo entran su nombre y su descripción; el resto se carga cuando hace falta.',
+    mira: 'Sin skill la tabla funciona, pero cada vez sale distinta. Con skill lleva la leyenda, el resaltado de fila y columna, el filtro en la dirección y el mismo aspecto que el resto de tablas del equipo.',
     guia: 'm06-que-es-una-skill',
     variantes: [
-      { id: 'sin', nombre: 'Sin skill', rodea: 'El proyecto completo, pero sin la skill carta-pokemon.', quitar: SKILL_CARTA },
-      { id: 'con', nombre: 'Con skill', rodea: '.claude/skills/carta-pokemon/: SKILL.md, plantilla.md, datos del equipo y dos scripts.', quitar: [] },
+      { id: 'sin', nombre: 'Sin skill', rodea: 'El proyecto completo (reglas, contexto, hooks), pero sin la skill pantalla-nueva.', quitar: SKILLS },
+      { id: 'con', nombre: 'Con skill', rodea: 'Lo mismo, más .claude/skills/pantalla-nueva: SKILL.md, la hoja de estilos del patrón y su validador.', quitar: SKILL_IMPLEMENTAR },
     ],
-    mostrar: ['cartas/pikachu.md'],
-    comprobaciones: [
-      { nombre: 'La carta sigue el formato y los datos del equipo', cmd: 'node "{REPO}/02-ejemplos-codigo/demo/.claude/skills/carta-pokemon/scripts/validar.mjs" cartas/pikachu.md', espera: 'codigo0' },
-    ],
+    comprobaciones: comprobaciones('tabla', 'sintaxis', 'patron', 'red'),
   },
   {
-    id: 'hook',
-    tema: 'Hooks',
-    titulo: 'El hook para al agente',
-    idea: 'Una regla escrita se cumple casi siempre; un hook, siempre. Sale con código 2 y escribe el motivo por stderr: quien lo lee es el agente, no tú.',
-    prompt: 'Tengo prisa. Sin explorar el proyecto ni leer otros ficheros, edita solo src/ui/buscadorView.mjs para que muestre también el tipo de cada Pokémon, pidiéndolo con fetch a PokéAPI desde la propia vista.',
-    mira: 'El prompt empuja al agente a saltarse el acuerdo del equipo sin mirar nada. Con hook: edita la vista, el hook lo detiene, lee el motivo y cambia de rumbo. Sin hook: la llamada se queda en la vista y nadie se entera.',
+    id: 'hook', tema: 'Hooks', titulo: 'La red que detiene',
+    idea: 'Una regla escrita se cumple casi siempre; un hook, siempre. Tras cada edición pasa la red del equipo; si falla, sale con código 2 y el motivo lo lee el agente, no tú.',
+    mira: 'Con hook, abre «Todo lo que hizo» y busca las paradas en rojo: el hook lo detiene, le dice por qué y él corrige. Sin red nadie le dice que hay un límite de tamaño ni que los colores van en un solo fichero.',
     guia: 'm05-el-hook-de-punta-a-punta',
     variantes: [
-      { id: 'sin', nombre: 'Sin hook', rodea: 'Sin reglas escritas y sin hooks. La comprobación existe, pero nadie la lanza.', quitar: [...REGLAS, ...HOOKS] },
-      { id: 'con', nombre: 'Con hook', rodea: 'Sin reglas escritas, pero con .claude/settings.json: un hook tras cada edición y otro al terminar.', quitar: REGLAS },
+      { id: 'sin', nombre: 'Sin red', rodea: 'Solo el código. Sin reglas escritas, sin comprobaciones y sin hooks.', ...SOLO_CODIGO },
+      { id: 'con', nombre: 'Con hook', rodea: 'El mismo código, sin reglas escritas, más un hook de la configuración del equipo que pasa la red tras cada edición y al terminar. No está entre los ficheros del proyecto y nadie le ha avisado de que existe.', ...SOLO_HOOK },
     ],
-    comprobaciones: [FRONTERA],
+    comprobaciones: comprobaciones('tabla', 'sintaxis', 'red', 'tests'),
   },
   {
-    id: 'workflow',
-    tema: 'Workflow',
-    titulo: 'El mismo encargo, llevado por fases',
+    id: 'workflow', tema: 'Workflow', titulo: 'El mismo encargo, llevado por fases',
     idea: 'Un workflow fija el orden: investigar, planificar, especificar, implementar y verificar, cada fase con algo prohibido. El plan es lo único que puedes revisar antes del código.',
-    prompt: 'Haz que la búsqueda ignore las tildes: «pikachú» tiene que encontrar a Pikachu.',
-    promptCon: '/implementar Haz que la búsqueda ignore las tildes: «pikachú» tiene que encontrar a Pikachu.',
-    mira: 'Con workflow deja un plan.md con las decisiones que tomó por su cuenta, y el criterio entra en specs/ antes que el código.',
+    mira: 'El plan.md que deja, con las decisiones que tomó por su cuenta, y que el criterio entra en specs/ antes que el código.',
     guia: 'm06-el-workflow-implement',
+    prefijoCon: '/implementar ',
     variantes: [
-      { id: 'sin', nombre: 'Encargo directo', rodea: 'Reglas y contexto, pero sin workflow y sin hooks.', quitar: [...HOOKS, ...SKILL_IMPLEMENTAR] },
-      { id: 'con', nombre: 'Con /implementar', rodea: 'Lo mismo, más la skill implementar, que marca las seis fases.', quitar: HOOKS, usaPromptCon: true },
+      { id: 'sin', nombre: 'Encargo directo', rodea: 'Reglas y contexto, sin hooks y sin workflow.', quitar: ['.claude'] },
+      { id: 'con', nombre: 'Con /implementar', rodea: 'Lo mismo, más la skill implementar, que marca las seis fases.', quitar: [...HOOKS, ...SKILL_PANTALLA], conPrefijo: true },
     ],
-    mostrar: ['plan.md'],
-    comprobaciones: [{ nombre: 'Dejó un plan que se puede revisar', existe: 'plan.md' }, CRITERIO, TESTS_INTACTOS, VERDE],
+    comprobaciones: comprobaciones('tabla', 'sintaxis', 'plan', 'criterio', 'novedades', 'red'),
   },
   {
-    id: 'harness',
-    tema: 'Harness',
-    titulo: 'Todo junto: pedir frente a delegar',
+    id: 'harness', tema: 'Harness', titulo: 'Todo junto: pedir frente a delegar',
     idea: 'El harness es todo lo que rodea al modelo: contexto, reglas, skills, hooks y comprobaciones. El modelo es el mismo en las dos columnas; lo que cambia es el repositorio.',
-    prompt: LIMITE,
     mira: 'Cuánto tendrías que leer para aceptar cada resultado. En una columna, todo. En la otra, lo que señala la red.',
     guia: 'm05-mapa-final-del-dia-1',
     variantes: [
-      { id: 'sin', nombre: 'Solo el modelo', rodea: 'El código y nada más.', quitar: TODO },
+      { id: 'sin', nombre: 'Solo el modelo', rodea: 'El código y nada más.', ...SOLO_CODIGO },
       { id: 'con', nombre: 'Con el harness', rodea: 'Contexto, reglas, skills, hooks y la red de comprobaciones.', quitar: [] },
     ],
-    comprobaciones: [NOVEDADES, CRITERIO, TESTS_INTACTOS, FRONTERA, VERDE],
+    comprobaciones: comprobaciones('tabla', 'sintaxis', 'nombre', 'kanto', 'novedades', 'criterio', 'patron', 'red', 'tests'),
   },
 ]

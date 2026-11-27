@@ -1,0 +1,33 @@
+/* Los colores del equipo. Es el ÚNICO fichero donde se escribe un color. */
+:root {
+  --fondo: #f4f2ec;
+  --papel: #ffffff;
+  --tinta: #1d1f23;
+  --suave: #62666d;
+  --linea: #dedbd2;
+  --acento: #c8102e;
+  --acento-suave: #fbe7ea;
+  --eficaz: #1c7a3d;
+  --eficaz-suave: #dff3e5;
+  --debil: #b3261e;
+  --debil-suave: #fbe4e1;
+  --nulo: #62666d;
+  --nulo-suave: #e6e4de;
+
+  /* Los 15 tipos de Kanto */
+  --tipo-normal: #9a9a7a;
+  --tipo-fuego: #e8703a;
+  --tipo-agua: #4f8fdc;
+  --tipo-planta: #5fae54;
+  --tipo-electrico: #e3b61f;
+  --tipo-hielo: #6fc7c2;
+  --tipo-lucha: #b5402f;
+  --tipo-veneno: #9a4a9c;
+  --tipo-tierra: #c9a14a;
+  --tipo-volador: #8e86d9;
+  --tipo-psiquico: #e2567f;
+  --tipo-bicho: #9aa62a;
+  --tipo-roca: #a8904a;
+  --tipo-fantasma: #63508c;
+  --tipo-dragon: #5b3fd6;
+}

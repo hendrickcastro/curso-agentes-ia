@@ -29,9 +29,9 @@ function ponerRuta(n) {
   $('#resumen-ruta').innerHTML = `<b>Ruta ${r.nombre.toLowerCase()}</b>${r.lema}.<br><small>${r.modulos} módulos · ${r.secciones} secciones · ${r.duracion}</small>`
   aplicarEdicion()
 }
-DATOS.rutas.forEach((r) => cajaRutas.append(h('button', { 'data-n': r.n, title: `${r.lema} (${r.duracion})`, onclick: () => { ponerRuta(r.n); if (r.n === 4) ponerVista('vivo') } }, r.nombre)))
+DATOS.rutas.forEach((r) => cajaRutas.append(h('button', { 'data-n': r.n, title: `${r.lema} (${r.duracion})`, onclick: () => ponerRuta(r.n) }, r.nombre)))
 
-const enRuta = (el, ruta = Number(document.body.dataset.ruta)) => (ruta === 4 ? el.dataset.agente !== undefined : Number(el.dataset.nivel) <= ruta)
+const enRuta = (el, ruta = Number(document.body.dataset.ruta)) => Number(el.dataset.nivel) <= ruta
 const visible = (el) => enRuta(el) && !el.closest('.quitado')
 // La ruta más corta en la que se ve un elemento, para saltar a él desde otra vista
 const mostrarEnRuta = (el) => { if (!enRuta(el)) ponerRuta(Number(el.dataset.nivel)) }
@@ -275,10 +275,10 @@ document.addEventListener('keydown', (e) => {
   }
   if (e.key === 'p' || e.key === 'P') presentar()
   if (e.key === 'e' || e.key === 'E') ponerEdicion(!document.body.classList.contains('editando'))
-  if (['1', '2', '3', '4'].includes(e.key)) ponerRuta(Number(e.key))
+  if (['1', '2', '3'].includes(e.key)) ponerRuta(Number(e.key))
 })
 
-ponerRuta(memoria.leer('kt540.ruta', 1))
+ponerRuta([1, 2, 3].includes(memoria.leer('kt540.ruta', 1)) ? memoria.leer('kt540.ruta', 1) : 1)
 
 // enlaces directos: index.html#vista-lab  ·  #vista-lab:carriles  ·  #vista-diapos
 const destino = location.hash.match(/^#vista-(\w+)(?::(\w+))?$/)

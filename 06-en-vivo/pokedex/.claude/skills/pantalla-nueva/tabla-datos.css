@@ -1,0 +1,13 @@
+/* Patrón de tabla del equipo. Solo variables de tokens.css. */
+.leyenda { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 12px 0; font-size: 14px; color: var(--suave); }
+.leyenda b { display: inline-block; min-width: 34px; text-align: center; border-radius: 6px; padding: 1px 6px; margin-right: 4px; }
+.tabla-contenedor { overflow-x: auto; background: var(--papel); border: 1px solid var(--linea); border-radius: 12px; }
+.tabla-datos { border-collapse: collapse; width: 100%; font-size: 14px; }
+.tabla-datos caption { caption-side: top; text-align: left; padding: 10px 12px; color: var(--suave); }
+.tabla-datos th, .tabla-datos td { border: 1px solid var(--linea); padding: 6px 4px; text-align: center; min-width: 44px; }
+.tabla-datos thead th, .tabla-datos tbody th { background: var(--fondo); font-weight: 600; text-transform: capitalize; }
+.tabla-datos td:focus { outline: 2px solid var(--acento); outline-offset: -2px; }
+.tabla-datos .resaltada { background: var(--acento-suave); }
+.tabla-datos .eficaz { background: var(--eficaz-suave); color: var(--eficaz); font-weight: 700; }
+.tabla-datos .debil { background: var(--debil-suave); color: var(--debil); font-weight: 700; }
+.tabla-datos .nulo { background: var(--nulo-suave); color: var(--nulo); font-weight: 700; }

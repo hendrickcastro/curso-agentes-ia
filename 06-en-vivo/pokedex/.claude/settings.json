@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      { "matcher": "Edit|Write|MultiEdit", "hooks": [{ "type": "command", "command": "node tools/guardarrail.mjs edit" }] }
+    ],
+    "Stop": [
+      { "hooks": [{ "type": "command", "command": "node tools/guardarrail.mjs stop" }] }
+    ]
+  }
+}

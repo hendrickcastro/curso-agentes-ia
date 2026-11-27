@@ -1,0 +1,17 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fondo); color: var(--tinta); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.barra { display: flex; gap: 20px; align-items: center; padding: 12px 20px; background: var(--acento); color: var(--papel); }
+.marca { font-size: 18px; }
+.menu { display: flex; gap: 6px; }
+.menu a { color: var(--papel); text-decoration: none; padding: 5px 12px; border-radius: 20px; }
+.menu a.activo { background: var(--papel); color: var(--acento); font-weight: 600; }
+#app { max-width: 1100px; margin: 0 auto; padding: 22px 16px 60px; }
+.pantalla-cabecera h1 { margin: 0 0 4px; font-size: 26px; }
+.pantalla-ayuda { margin: 0 0 16px; color: var(--suave); }
+.campo { width: 100%; max-width: 420px; padding: 9px 12px; border: 1px solid var(--linea); border-radius: 10px; background: var(--papel); font: inherit; }
+.tarjetas { list-style: none; padding: 0; margin: 16px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.tarjeta { background: var(--papel); border: 1px solid var(--linea); border-radius: 12px; padding: 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tarjeta small { color: var(--suave); width: 100%; }
+.tarjeta strong { width: 100%; font-size: 18px; }
+.tipo { color: var(--papel); border-radius: 20px; padding: 1px 10px; font-size: 13px; text-transform: capitalize; }
+.vacio { color: var(--suave); }

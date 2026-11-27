@@ -1,13 +1,21 @@
 
 // =====================================================================
-// EN VIVO: el mismo prompt, dos veces, con Claude Code de verdad.
+// EN VIVO: el mismo encargo, dos veces, con Claude Code de verdad.
+// Cada ejecución es una versión guardada en el servidor: se ve la web que dejó,
+// todo lo que hizo y las comprobaciones, y se puede volver a cargar y comparar.
 // Necesita el servidor local (node servidor.mjs): desde file:// solo explica cómo arrancarlo.
 // =====================================================================
-const CLAVE_VIVO = 'kt540.vivo'
-let corridas = memoria.leer(CLAVE_VIVO, {})
-const guardarCorridas = () => memoria.guardar(CLAVE_VIVO, corridas)
+let VIVO = null // lo que devuelve /api/estado
+const cargadas = new Map() // id de versión → ejecución reconstruida
+const elegida = {} // «ejemplo:variante» → id de la versión que se está viendo
 const corto = (texto, n = 1500) => { const t = String(texto ?? ''); return t.length > n ? `${t.slice(0, n)}\n… (${t.length - n} caracteres más)` : t }
 const textoDe = (contenido) => (Array.isArray(contenido) ? contenido.map((c) => c.text ?? '').join('\n') : String(contenido ?? ''))
+const versionesDe = (ejemplo, variante) => VIVO.ejecuciones.filter((e) => e.ejemplo === ejemplo && e.variante === variante && e.terminado)
+// La web de una versión, abierta ya en la pantalla nueva si se sabe cuál es
+const urlWeb = (id) => { const ruta = VIVO.ejecuciones.find((e) => e.id === id)?.ruta; return `http://${location.hostname}:${VIVO.puertoWebs}/${id}/index.html${ruta ? `#${ruta}` : ''}` }
+const hora = (fecha) => new Date(fecha).toLocaleString('es', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+const aciertos = (meta) => `${meta.comprobaciones.filter((c) => c.bien).length}/${meta.comprobaciones.length}`
+const nombreVersion = (meta) => { const ej = VIVO.ejemplos.find((e) => e.id === meta.ejemplo); return `${ej.tema} · ${ej.variantes.find((v) => v.id === meta.variante).nombre} · v${meta.n}` }
 
 function resumirHerramienta(nombre, entrada, dir) {
   const ruta = (r) => String(r ?? '').replaceAll(`/private${dir}/`, '').replaceAll(`${dir}/`, '').replaceAll(dir, '.')
@@ -19,40 +27,59 @@ function resumirHerramienta(nombre, entrada, dir) {
   return ruta(JSON.stringify(entrada)).slice(0, 160)
 }
 
-// Convierte un evento del flujo de Claude Code en entradas compactas del registro.
-function entradasDe(evento, corrida) {
-  const dir = corrida.dir
+const nuevaEjecucion = () => ({ registro: [], comprobaciones: [], metricas: { herramientas: 0, paradas: 0, escritos: [], skills: [] }, dir: '', respuesta: '' })
+
+// Aplica un dato del servidor (en directo o leído de una versión guardada) y devuelve las entradas de registro que genera.
+function aplicar(dato, ej) {
+  if (dato.tipo === 'preparado') { Object.assign(ej, { id: dato.id, n: dato.n, dir: dato.dir, modelo: dato.modelo }); return [{ t: 'inicio', texto: `Copia limpia del proyecto${dato.quitar.length ? `, sin: ${dato.quitar.join(', ')}` : ', con todo'}.` }] }
+  if (dato.tipo === 'aviso') return [{ t: 'aviso', texto: dato.texto }]
+  if (dato.tipo === 'cambios') { ej.cambios = { ficheros: dato.ficheros, diff: dato.diff }; return [] }
+  if (dato.tipo === 'comprobacion') { ej.comprobaciones.push(dato); return [] }
+  if (dato.tipo === 'fin') { ej.fin = true; ej.meta = dato.meta; return [] }
+  if (dato.tipo !== 'evento') return []
+  const evento = dato.evento
+  const dir = ej.dir
   if (evento.type === 'system' && evento.subtype === 'init') {
-    const propias = (evento.skills ?? []).filter((s) => ['revisar-pr', 'carta-pokemon', 'implementar'].includes(s))
+    const propias = (evento.skills ?? []).filter((s) => ['pantalla-nueva', 'implementar'].includes(s))
     return [{ t: 'inicio', texto: `Arranca ${evento.model}. Skills del proyecto a la vista: ${propias.join(', ') || 'ninguna'}.` }]
   }
   if (evento.type === 'system' && evento.subtype === 'hook_response') {
     const paro = evento.exit_code !== 0
-    if (paro) corrida.metricas.paradas++
+    if (paro) ej.metricas.paradas++
     return [{ t: paro ? 'paro' : 'hook', texto: paro ? `El hook ${evento.hook_event} lo detiene (código ${evento.exit_code})` : `Hook ${evento.hook_event}: pasa`, detalle: paro ? corto(evento.stderr || evento.output || evento.stdout, 1200) : '' }]
   }
-  if (evento.type === 'system' && evento.subtype === 'permission_denied') { corrida.metricas.denegados = (corrida.metricas.denegados ?? 0) + 1; return [{ t: 'denegado', texto: 'Comando no permitido en esta demostración. No es un fallo: el agente lo ve y sigue por otro camino.' }] }
+  if (evento.type === 'system' && evento.subtype === 'permission_denied') return [{ t: 'denegado', texto: 'El aislamiento bloqueó una acción que salía de la copia de trabajo o usaba la red. No es un fallo: el agente lo ve y sigue.' }]
   if (evento.type === 'assistant') {
     return (evento.message?.content ?? []).flatMap((c) => {
       if (c.type === 'text' && c.text.trim()) return [{ t: 'texto', texto: c.text.trim() }]
       if (c.type !== 'tool_use') return []
       const resumen = resumirHerramienta(c.name, c.input ?? {}, dir)
-      corrida.metricas.herramientas++
-      if (c.name === 'Read') corrida.metricas.leidos.push(resumen)
-      if (['Edit', 'Write', 'MultiEdit'].includes(c.name)) corrida.metricas.escritos.push(resumen)
-      if (c.name === 'Skill') corrida.metricas.skills.push(resumen)
+      ej.metricas.herramientas++
+      if (['Edit', 'Write', 'MultiEdit'].includes(c.name)) ej.metricas.escritos.push(resumen)
+      if (c.name === 'Skill') ej.metricas.skills.push(resumen)
       return [{ t: 'herr', nombre: c.name, texto: resumen }]
     })
   }
   if (evento.type === 'user') {
-    return (Array.isArray(evento.message?.content) ? evento.message.content : []).filter((c) => c.type === 'tool_result' && !(c.is_error && /^Permission for this tool use was denied/.test(textoDe(c.content)))).map((c) => { const texto = textoDe(c.content).replaceAll(`/private${dir}/`, '').replaceAll(`${dir}/`, ''); const codigo = c.is_error ? (/^Exit code (\d+)/.exec(texto)?.[1] ?? '≠0') : null; return { t: c.is_error ? 'fallo' : 'res', codigo, texto: corto(texto.replace(/^Exit code \d+\n?/, ''), 1200) } })
+    return (Array.isArray(evento.message?.content) ? evento.message.content : [])
+      .filter((c) => c.type === 'tool_result' && !(c.is_error && /^Permission for this tool use was denied/.test(textoDe(c.content))))
+      .map((c) => { const texto = textoDe(c.content).replaceAll(`/private${dir}/`, '').replaceAll(`${dir}/`, ''); const codigo = c.is_error ? (/^Exit code (\d+)/.exec(texto)?.[1] ?? '≠0') : null; return { t: c.is_error ? 'fallo' : 'res', codigo, texto: corto(texto.replace(/^Exit code \d+\n?/, ''), 1200) } })
   }
   if (evento.type === 'result') {
-    Object.assign(corrida.metricas, { turnos: evento.num_turns, segundos: Math.round((evento.duration_ms ?? 0) / 1000), coste: evento.total_cost_usd, salida: evento.usage?.output_tokens, denegados: (evento.permission_denials ?? []).length })
-    corrida.respuesta = String(evento.result ?? '')
+    Object.assign(ej.metricas, { turnos: evento.num_turns, segundos: Math.round((evento.duration_ms ?? 0) / 1000), coste: evento.total_cost_usd, salida: evento.usage?.output_tokens })
+    ej.respuesta = String(evento.result ?? '')
     return evento.is_error ? [{ t: 'error', texto: corto(evento.result ?? evento.subtype) }] : []
   }
   return []
+}
+
+async function cargarVersion(id) {
+  if (cargadas.has(id)) return cargadas.get(id)
+  const ej = nuevaEjecucion()
+  const texto = await (await fetch(`/api/ejecuciones/${id}/eventos`)).text()
+  for (const linea of texto.split('\n')) if (linea.trim()) ej.registro.push(...aplicar(JSON.parse(linea), ej))
+  cargadas.set(id, ej)
+  return ej
 }
 
 const ICONO = { inicio: '●', texto: '💬', herr: '🔧', res: '↩', fallo: '↩', denegado: '🚫', error: '✘', hook: '✓', paro: '⛔', aviso: '⚠' }
@@ -61,194 +88,222 @@ function nodoEntrada(e) {
     const lineas = e.texto.split('\n').filter((l) => l.trim())
     const muestra = (lineas.find((l) => l.trim().length > 3) ?? lineas[0] ?? '(sin salida)').trim().slice(0, 80)
     const etiqueta = { res: 'Resultado', fallo: `Resultado (el comando salió con código ${e.codigo ?? '≠0'})`, error: 'Error' }[e.t]
-    return h('details', { class: `ev ${e.t}` }, h('summary', {}, `${ICONO[e.t]} ${etiqueta} · ${muestra}${lineas.length > 1 ? ` … (${lineas.length} líneas, pulsa para verlas)` : ''}`), h('pre', {}, e.texto || '(sin salida)'))
+    return h('details', { class: `ev ${e.t}` }, h('summary', {}, `${ICONO[e.t]} ${etiqueta} · ${muestra}${lineas.length > 1 ? ` … (${lineas.length} líneas)` : ''}`), h('pre', {}, e.texto || '(sin salida)'))
   }
   if (e.t === 'herr') return h('div', { class: 'ev herr' }, `${ICONO.herr} `, h('b', {}, e.nombre), ' ', h('code', {}, e.texto))
   if (e.t === 'paro') return h('div', { class: 'ev paro' }, `${ICONO.paro} ${e.texto}`, e.detalle ? h('pre', {}, e.detalle) : null)
   return h('div', { class: `ev ${e.t}` }, `${ICONO[e.t] ?? ''} ${e.texto}`)
 }
 
-function pintarColumna(caja, ejemplo, variante) {
-  const clave = `${ejemplo.id}:${variante.id}`
-  const corrida = corridas[clave]
-  const boton = h('button', { class: 'primario', 'data-ejecutar': clave }, corrida ? '↻ Repetir' : '▶ Ejecutar')
-  const reset = corrida ? h('button', { title: 'Borra este resultado y deja la columna como al principio' }, '⟲ Restablecer') : null
-  const registro = h('div', { class: 'registro' })
-  const resultado = h('div', { class: 'resultado-vivo' })
-  caja.replaceChildren(...[
-    h('div', { class: 'col-cabecera' }, h('h3', {}, variante.nombre), h('span', { class: 'col-botones' }, reset, boton)),
-    h('p', { class: 'rodea' }, variante.rodea),
-    variante.prompt !== ejemplo.prompt ? h('p', { class: 'ayuda' }, 'Prompt de esta columna: ', h('code', {}, variante.prompt)) : null,
-    registro, resultado].filter(Boolean))
-  if (!corrida) { registro.append(h('p', { class: 'ayuda' }, 'Todavía sin ejecutar.')); return { boton, reset, registro, resultado } }
-  corrida.registro.forEach((e) => registro.append(nodoEntrada(e)))
-  pintarResultado(resultado, corrida, ejemplo.variantes[0].id === variante.id)
-  return { boton, reset, registro, resultado }
-}
+const marcoWeb = (id) => h('div', { class: 'web-vista' },
+  h('div', { class: 'web-barra' }, h('span', {}, 'La web que dejó el agente (puedes usarla aquí mismo)'), h('a', { href: urlWeb(id), target: '_blank', rel: 'noopener' }, 'Abrir en otra pestaña ↗')),
+  h('div', { class: 'web-marco' }, h('iframe', { src: urlWeb(id), loading: 'lazy', title: `Web de la versión ${id}` })))
 
-// esBase: la columna a la que le falta la pieza. Ahí un «no» es lo que el ejemplo quiere enseñar, no un fallo.
-function pintarResultado(caja, corrida, esBase) {
-  const m = corrida.metricas
-  caja.replaceChildren()
-  if (corrida.respuesta) caja.append(h('h4', {}, 'Respuesta final'), h('pre', { class: 'respuesta' }, corrida.respuesta))
-  for (const f of corrida.ficheros ?? []) caja.append(h('h4', {}, `Lo que dejó en ${f.ruta}`), f.contenido == null ? h('p', { class: 'ayuda' }, 'No creó ese fichero.') : h('pre', { class: 'fichero' }, f.contenido))
-  if (corrida.comprobaciones?.length) {
-    caja.append(h('h4', {}, '¿Lo consiguió? Lo comprueba el servidor, no el agente'))
-    for (const c of corrida.comprobaciones) {
-      const nota = c.bien ? '' : esBase ? ' — lo esperable sin esta pieza' : ' — no era lo esperado: el modelo no es determinista, repite la ejecución'
-      caja.append(h('details', { class: 'comprobacion' }, h('summary', {}, h('span', { class: `pastilla ${c.bien ? 'verde' : esBase ? 'ambar' : 'roja'}` }, c.bien ? 'Sí' : 'No'), ` ${c.nombre}`, h('small', {}, nota)), c.cmd ? h('p', { class: 'ayuda' }, h('code', {}, c.cmd)) : null, h('pre', {}, c.detalle)))
+// esBase: la columna a la que le falta la pieza. Ahí un «No» es lo que el ejemplo quiere enseñar, no un fallo.
+function nodosResultado(ej, esBase) {
+  const m = ej.metricas
+  const nodos = []
+  if (ej.comprobaciones.length) {
+    nodos.push(h('h4', {}, '¿Lo consiguió? Lo comprueba el servidor, no el agente'))
+    for (const c of ej.comprobaciones) {
+      const nota = c.bien ? '' : esBase ? ' — lo esperable sin esta pieza' : ' — no era lo esperado: el modelo no es determinista, lanza otra versión'
+      nodos.push(h('details', { class: 'comprobacion' }, h('summary', {}, h('span', { class: `pastilla ${c.bien ? 'verde' : esBase ? 'ambar' : 'roja'}` }, c.bien ? 'Sí' : 'No'), ` ${c.nombre}`, h('small', {}, nota)), h('pre', {}, c.detalle)))
     }
   }
-  if (corrida.cambios?.ficheros) caja.append(h('details', {}, h('summary', {}, `Ficheros que cambió (${corrida.cambios.ficheros.split('\n').length})`), h('pre', {}, corrida.cambios.ficheros), h('pre', { class: 'diff' }, corrida.cambios.diff)))
-  if (corrida.fin) caja.append(h('p', { class: 'ayuda' }, `${m.turnos ?? '–'} turnos · ${m.herramientas} herramientas · ${m.segundos ?? '–'} s · ${m.salida ?? '–'} tokens de salida · ${m.coste != null ? `${m.coste.toFixed(2)} $ a precio de API` : ''} · ${corrida.modelo}`))
+  const pasos = h('div', { class: 'registro' }, ej.registro.map(nodoEntrada))
+  nodos.push(h('details', { class: 'pasos' }, h('summary', {}, `Todo lo que hizo: ${ej.registro.length} pasos · ${m.turnos ?? '–'} turnos · ${m.segundos ?? '–'} s${m.paradas ? ` · ${m.paradas} parada(s) de hook` : ''}`), pasos,
+    ej.respuesta ? h('h4', {}, 'Su respuesta final') : null, ej.respuesta ? h('pre', { class: 'respuesta' }, ej.respuesta) : null))
+  if (ej.cambios?.ficheros) nodos.push(h('details', { class: 'pasos' }, h('summary', {}, `Ficheros que cambió (${ej.cambios.ficheros.split('\n').length})`), h('pre', {}, ej.cambios.ficheros), h('pre', { class: 'diff' }, corto(ej.cambios.diff, 30000))))
+  nodos.push(h('p', { class: 'ayuda' }, `${m.herramientas} herramientas · ${m.salida ?? '–'} tokens de salida${m.coste != null ? ` · ${m.coste.toFixed(2)} $ a precio de API` : ''} · ${ej.modelo ?? ''}`))
+  return nodos
 }
 
-function filasComparacion(ejemplo) {
-  const [a, b] = ejemplo.variantes.map((v) => corridas[`${ejemplo.id}:${v.id}`])
-  if (!a?.fin || !b?.fin) return null
+// ---------- comparación de dos ejecuciones ----------
+function tablaComparada(a, b, nombres, conVeredicto) {
   const fila = (nombre, f) => [nombre, f(a), f(b)]
-  const filas = [
-    fila('Ficheros que escribió', (c) => String(new Set(c.metricas.escritos).size)),
-    fila('Skills que cargó', (c) => c.metricas.skills.join(', ') || '—'),
-    fila('Veces que lo paró un hook', (c) => String(c.metricas.paradas)),
-    fila('Herramientas usadas', (c) => String(c.metricas.herramientas)),
-    fila('Turnos', (c) => String(c.metricas.turnos ?? '—')),
-    fila('Duración', (c) => `${c.metricas.segundos ?? '—'} s`),
-  ]
-  ejemplo.comprobaciones.forEach((nombre) => filas.push(fila(nombre, (c) => { const r = c.comprobaciones.find((x) => x.nombre === nombre); return r ? (r.bien ? 'Sí' : 'No') : '—' })))
-  return filas
-}
-function pintarComparacion(caja, ejemplo) {
-  const filas = filasComparacion(ejemplo)
-  if (!filas) { caja.replaceChildren(h('p', { class: 'ayuda' }, 'Ejecuta las dos columnas para ver la comparación.')); return }
-  // Veredicto: ¿se ve la diferencia que el ejemplo quiere enseñar?
-  const [sin, con] = ejemplo.variantes.map((v) => corridas[`${ejemplo.id}:${v.id}`])
-  const gana = con.comprobaciones.filter((c) => c.bien && !sin.comprobaciones.find((x) => x.nombre === c.nombre)?.bien).length
-  const fallaCon = con.comprobaciones.filter((c) => !c.bien).length
-  const veredicto = gana > 0 && fallaCon === 0 ? ['verde', `Se ve la diferencia: «${ejemplo.variantes[1].nombre}» consigue ${gana} cosa${gana === 1 ? '' : 's'} que «${ejemplo.variantes[0].nombre}» no. Los «No» de la primera columna son el resultado esperado, no un error.`]
-    : gana > 0 ? ['ambar', `Hay diferencia a favor de «${ejemplo.variantes[1].nombre}» (${gana}), pero también se le escapó algo (${fallaCon}). El modelo no es determinista: repite esa columna.`]
-    : ['ambar', 'Esta vez las dos columnas han salido igual en las comprobaciones. Pasa: el modelo no es determinista y a veces deduce solo lo que falta. Compara los registros y las respuestas, o repite la ejecución.']
-  caja.innerHTML = `<p class="veredicto ${veredicto[0]}">${veredicto[1]}</p><div class="tabla comparacion"><table><thead><tr><th></th>${ejemplo.variantes.map((v) => `<th>${v.nombre}</th>`).join('')}</tr></thead><tbody>${filas.map(([n, x, y]) => `<tr><th>${n}</th><td class="${x !== y ? 'distinto' : ''}">${x}</td><td class="${x !== y ? 'distinto' : ''}">${y}</td></tr>`).join('')}</tbody></table></div>`
+  const filas = [...new Set([...a.comprobaciones, ...b.comprobaciones].map((c) => c.nombre))].map((nombre) => fila(nombre, (e) => { const r = e.comprobaciones.find((x) => x.nombre === nombre); return r ? (r.bien ? 'Sí' : 'No') : '—' }))
+  filas.push(
+    fila('Skills que cargó', (e) => e.metricas.skills.join(', ') || '—'),
+    fila('Veces que lo paró un hook', (e) => String(e.metricas.paradas)),
+    fila('Ficheros que cambió', (e) => String(e.cambios?.ficheros ? e.cambios.ficheros.split('\n').length : 0)),
+    fila('Herramientas usadas', (e) => String(e.metricas.herramientas)),
+    fila('Turnos', (e) => String(e.metricas.turnos ?? '—')),
+    fila('Duración', (e) => `${e.metricas.segundos ?? '—'} s`),
+    fila('Coste a precio de API', (e) => (e.metricas.coste != null ? `${e.metricas.coste.toFixed(2)} $` : '—')))
+  let veredicto = ''
+  if (conVeredicto) {
+    const gana = b.comprobaciones.filter((c) => c.bien && !a.comprobaciones.find((x) => x.nombre === c.nombre)?.bien).length
+    const falla = b.comprobaciones.filter((c) => !c.bien).length
+    const [clase, texto] = gana > 0 && falla === 0 ? ['verde', `Se ve la diferencia: «${nombres[1]}» consigue ${gana} cosa${gana === 1 ? '' : 's'} que «${nombres[0]}» no. Los «No» de la primera columna son el resultado esperado, no un error.`]
+      : gana > 0 ? ['ambar', `Hay diferencia a favor de «${nombres[1]}» (${gana}), pero también se le escapó algo (${falla}). El modelo no es determinista: lanza otra versión de esa columna.`]
+      : ['ambar', 'Esta vez las dos columnas han salido igual en las comprobaciones. Pasa: el modelo no es determinista y a veces deduce solo lo que falta. Compara las dos webs y los pasos, o lanza otra versión.']
+    veredicto = `<p class="veredicto ${clase}">${texto}</p>`
+  }
+  const celda = (x, y, v) => `<td class="${x !== y ? 'distinto' : ''}">${v}</td>`
+  return `${veredicto}<div class="tabla comparacion"><table><thead><tr><th></th>${nombres.map((n) => `<th>${n}</th>`).join('')}</tr></thead><tbody>${filas.map(([n, x, y]) => `<tr><th>${n}</th>${celda(x, y, x)}${celda(x, y, y)}</tr>`).join('')}</tbody></table></div>`
 }
 
+// ---------- cola: como mucho dos ejecuciones a la vez ----------
 let enMarcha = 0
 const enEspera = []
 const turno = () => new Promise((listo) => { if (enMarcha < 2) { enMarcha++; listo() } else enEspera.push(listo) })
 const soltar = () => { const siguiente = enEspera.shift(); if (siguiente) siguiente(); else enMarcha-- }
 
-async function lanzar(ejemplo, variante, refs, alTerminar) {
-  const clave = `${ejemplo.id}:${variante.id}`
-  const corrida = { fecha: Date.now(), registro: [], comprobaciones: [], ficheros: [], metricas: { herramientas: 0, paradas: 0, leidos: [], escritos: [], skills: [] }, dir: '', respuesta: '' }
-  const anotar = (e) => { corrida.registro.push(e); refs.registro.append(nodoEntrada(e)); refs.registro.scrollTop = refs.registro.scrollHeight }
-  const control = new AbortController()
-  refs.abortar = () => control.abort()
-  if (refs.reset) refs.reset.hidden = true
-  refs.boton.textContent = '■ Detener (en cola)'
-  refs.registro.replaceChildren(h('p', { class: 'ayuda' }, 'Esperando a que termine otra ejecución (van de dos en dos)…'))
-  refs.resultado.replaceChildren()
-  await turno()
-  refs.boton.textContent = '■ Detener'
-  refs.registro.replaceChildren()
-  const inicio = Date.now()
-  let fase = 'arrancando Claude Code'
-  const estado = h('p', { class: 'estado-vivo' })
-  const latido = () => (estado.textContent = `⏳ En marcha · ${Math.round((Date.now() - inicio) / 1000)} s · ${fase}. Suele tardar entre 20 segundos y 2 minutos.`)
-  refs.resultado.replaceChildren(estado)
-  latido()
-  const reloj = setInterval(latido, 1000)
-  try {
-    if (control.signal.aborted) throw new Error('detenida')
-    const respuesta = await fetch(`/api/ejecutar?ejemplo=${ejemplo.id}&variante=${variante.id}`, { method: 'POST', signal: control.signal })
-    if (!respuesta.ok) throw new Error(await respuesta.text())
-    const lector = respuesta.body.getReader()
-    const decodificador = new TextDecoder()
-    let resto = ''
-    for (;;) {
-      const { done, value } = await lector.read()
-      if (done) break
-      const partes = (resto + decodificador.decode(value, { stream: true })).split('\n\n')
-      resto = partes.pop()
-      for (const parte of partes) {
-        if (!parte.startsWith('data: ')) continue
-        const dato = JSON.parse(parte.slice(6))
-        if (dato.tipo === 'preparado') { corrida.dir = dato.dir; corrida.modelo = dato.modelo; anotar({ t: 'inicio', texto: `Copia limpia del proyecto${dato.quitar.length ? `, sin: ${dato.quitar.join(', ')}` : ', con todo'}.` }) }
-        if (dato.tipo === 'evento') {
-          const ev = dato.evento
-          if (ev.type === 'system' && ev.subtype === 'thinking_tokens') fase = 'el modelo está pensando'
-          if (ev.type === 'assistant') { const uso = (ev.message?.content ?? []).find((c) => c.type === 'tool_use'); fase = uso ? `usando ${uso.name}` : 'escribiendo' }
-          if (ev.type === 'user') fase = 'leyendo el resultado y decidiendo el siguiente paso'
-          if (ev.type === 'result') fase = 'terminado; lanzando las comprobaciones'
-          entradasDe(ev, corrida).forEach(anotar)
-        }
-        if (dato.tipo === 'aviso') anotar({ t: 'aviso', texto: dato.texto })
-        if (dato.tipo === 'cambios') corrida.cambios = { ficheros: dato.ficheros, diff: dato.diff }
-        if (dato.tipo === 'fichero') corrida.ficheros.push({ ruta: dato.ruta, contenido: dato.contenido })
-        if (dato.tipo === 'comprobacion') corrida.comprobaciones.push(dato)
-        if (dato.tipo === 'fin') corrida.fin = true
-      }
-    }
-  } catch (error) {
-    anotar({ t: 'aviso', texto: `No se pudo ejecutar: ${error.message}` })
-  }
-  clearInterval(reloj)
-  soltar()
-  refs.abortar = null
-  // Una ejecución detenida no se guarda: la columna vuelve a como estaba antes de lanzarla.
-  if (!control.signal.aborted) {
-    delete corrida.dir
-    if (corrida.cambios) corrida.cambios.diff = corto(corrida.cambios.diff, 12000)
-    corridas[clave] = corrida
-    guardarCorridas()
-  }
-  alTerminar()
-}
-
 function pintarEjemplo(ejemplo, i) {
   const columnas = ejemplo.variantes.map(() => h('div', { class: 'col-vivo' }))
   const comparacion = h('div', {})
-  const refs = []
-  const comparar = () => pintarComparacion(comparacion, ejemplo)
-  const restablecer = (k) => { delete corridas[`${ejemplo.id}:${ejemplo.variantes[k].id}`]; guardarCorridas(); montar(k); comparar() }
-  // Pinta la columna desde lo guardado y engancha sus botones. Se llama al cargar, al terminar y al restablecer.
-  function montar(k) {
-    refs[k] = pintarColumna(columnas[k], ejemplo, ejemplo.variantes[k])
-    refs[k].boton.onclick = () => correr(k)
-    if (refs[k].reset) refs[k].reset.onclick = () => restablecer(k)
+  const abortar = [null, null]
+  const clave = (k) => `${ejemplo.id}:${ejemplo.variantes[k].id}`
+  const idVista = (k) => { const vs = versionesDe(ejemplo.id, ejemplo.variantes[k].id); return vs.some((v) => v.id === elegida[clave(k)]) ? elegida[clave(k)] : vs.at(-1)?.id }
+
+  async function comparar() {
+    const ids = [idVista(0), idVista(1)]
+    if (!ids[0] || !ids[1]) { comparacion.replaceChildren(h('p', { class: 'ayuda' }, 'Ejecuta las dos columnas para ver la comparación.')); return }
+    const [a, b] = await Promise.all(ids.map(cargarVersion))
+    comparacion.innerHTML = tablaComparada(a, b, ejemplo.variantes.map((v, k) => `${v.nombre} · v${[a, b][k].n}`), true)
   }
+
+  // Pinta una columna con la versión elegida (por defecto, la última).
+  async function montar(k) {
+    const variante = ejemplo.variantes[k]
+    const versiones = versionesDe(ejemplo.id, variante.id)
+    const id = idVista(k)
+    const ejecutar = h('button', { class: 'primario', onclick: () => correr(k) }, versiones.length ? '▶ Nueva versión' : '▶ Ejecutar')
+    const cabecera = h('div', { class: 'col-cabecera' }, h('h3', {}, variante.nombre), h('span', { class: 'col-botones' }, ejecutar))
+    const cuerpo = h('div', { class: 'col-cuerpo' })
+    columnas[k].replaceChildren(cabecera, h('p', { class: 'rodea' }, variante.rodea), variante.prompt !== VIVO.encargo ? h('p', { class: 'ayuda' }, 'En esta columna el encargo se lanza así: ', h('code', {}, variante.prompt)) : '', cuerpo)
+    if (!id) { cuerpo.append(h('p', { class: 'sin-ejecutar' }, 'Todavía sin ejecutar.')); return }
+    const selector = h('select', { class: 'versiones', title: 'Versiones guardadas de esta columna', onchange: (ev) => { elegida[clave(k)] = ev.target.value; montar(k); comparar() } },
+      versiones.map((v) => h('option', { value: v.id, selected: v.id === id }, `v${v.n} · ${hora(v.fecha)} · ${aciertos(v)} conseguido`)))
+    const borrar = h('button', { title: 'Borra esta versión del disco', onclick: async () => {
+      if (!confirm(`¿Borrar la versión v${versiones.find((v) => v.id === id).n} de «${variante.nombre}»?`)) return
+      VIVO.ejecuciones = (await (await fetch(`/api/ejecuciones/${id}`, { method: 'DELETE' })).json()).ejecuciones ?? VIVO.ejecuciones
+      cargadas.delete(id); delete elegida[clave(k)]
+      montar(k); comparar(); pintarComparador()
+    } }, '⟲ Borrar versión')
+    cabecera.querySelector('.col-botones').prepend(selector, borrar)
+    const ej = await cargarVersion(id)
+    cuerpo.replaceChildren(marcoWeb(id), h('div', { class: 'resultado-vivo' }, nodosResultado(ej, k === 0)))
+  }
+
   // El mismo botón lanza y, mientras corre, detiene.
-  const correr = (k) => { if (refs[k].abortar) refs[k].abortar(); else lanzar(ejemplo, ejemplo.variantes[k], refs[k], () => { montar(k); comparar() }) }
+  async function correr(k) {
+    if (abortar[k]) { abortar[k](); return }
+    const variante = ejemplo.variantes[k]
+    const control = new AbortController()
+    abortar[k] = () => control.abort()
+    const ej = nuevaEjecucion()
+    const boton = h('button', { class: 'primario', onclick: () => correr(k) }, '■ Detener (en cola)')
+    const registro = h('div', { class: 'registro' }, h('p', { class: 'ayuda' }, 'Esperando a que termine otra ejecución (van de dos en dos)…'))
+    const estado = h('p', { class: 'estado-vivo' })
+    columnas[k].replaceChildren(h('div', { class: 'col-cabecera' }, h('h3', {}, variante.nombre), h('span', { class: 'col-botones' }, boton)), h('p', { class: 'rodea' }, variante.rodea), estado, registro)
+    const anotar = (e) => { ej.registro.push(e); registro.append(nodoEntrada(e)); registro.scrollTop = registro.scrollHeight }
+    await turno()
+    boton.textContent = '■ Detener'
+    registro.replaceChildren()
+    const inicio = Date.now()
+    let fase = 'arrancando Claude Code'
+    const latido = () => (estado.textContent = `⏳ En marcha · ${Math.round((Date.now() - inicio) / 1000)} s · ${fase}. Construir la tabla suele llevar entre 1 y 4 minutos.`)
+    latido()
+    const reloj = setInterval(latido, 1000)
+    let meta = null
+    try {
+      if (control.signal.aborted) throw new Error('detenida')
+      const respuesta = await fetch(`/api/ejecutar?ejemplo=${ejemplo.id}&variante=${variante.id}`, { method: 'POST', signal: control.signal })
+      if (!respuesta.ok) throw new Error(await respuesta.text())
+      const lector = respuesta.body.getReader()
+      const decodificador = new TextDecoder()
+      let resto = ''
+      for (;;) {
+        const { done, value } = await lector.read()
+        if (done) break
+        const partes = (resto + decodificador.decode(value, { stream: true })).split('\n\n')
+        resto = partes.pop()
+        for (const parte of partes) {
+          if (!parte.startsWith('data: ')) continue
+          const dato = JSON.parse(parte.slice(6))
+          const ev = dato.evento
+          if (ev?.type === 'system' && ev.subtype === 'thinking_tokens') fase = 'el modelo está pensando'
+          if (ev?.type === 'assistant') { const uso = (ev.message?.content ?? []).find((c) => c.type === 'tool_use'); fase = uso ? `usando ${uso.name}` : 'escribiendo' }
+          if (ev?.type === 'user') fase = 'leyendo el resultado y decidiendo el siguiente paso'
+          if (ev?.type === 'result') fase = 'terminado; lanzando las comprobaciones'
+          aplicar(dato, ej).forEach(anotar)
+          if (dato.tipo === 'fin') meta = dato.meta
+        }
+      }
+    } catch (error) {
+      if (!control.signal.aborted) alert(`No se pudo ejecutar «${variante.nombre}»: ${error.message}`)
+    }
+    clearInterval(reloj)
+    soltar()
+    abortar[k] = null
+    if (meta && !control.signal.aborted) { // terminó: queda como versión nueva y pasa a ser la que se ve
+      VIVO.ejecuciones.push(meta)
+      cargadas.set(meta.id, ej)
+      elegida[clave(k)] = meta.id
+    }
+    await montar(k)
+    comparar()
+    pintarComparador()
+  }
+
   ejemplo.variantes.forEach((_, k) => montar(k))
   comparar()
   return h('article', { class: 'ejemplo-vivo', 'data-nivel': 1, 'data-agente': '', id: `vivo-${ejemplo.id}` },
     h('header', {}, h('p', { class: 'num' }, 'Ejemplo ', h('span', { class: 'n-vivo' }, String(i + 1)), ` · ${ejemplo.tema}`), h('h2', {}, ejemplo.titulo), h('button', { class: 'quitar', 'data-clave': `vivo-${ejemplo.id}` })),
     h('p', { class: 'lema' }, ejemplo.idea),
-    h('figure', { class: 'codigo' }, h('figcaption', {}, 'el mismo prompt en las dos columnas', h('button', { class: 'copiar' }, 'Copiar')), h('pre', {}, h('code', {}, ejemplo.prompt))),
     h('p', {}, h('strong', {}, 'En qué fijarte: '), ejemplo.mira),
-    h('div', { class: 'fila-botones' }, h('button', { class: 'primario', onclick: () => refs.forEach((r, k) => { if (!r.abortar) correr(k) }) }, '▶▶ Ejecutar las dos a la vez'), h('button', { title: 'Borra los dos resultados de este ejemplo', onclick: () => refs.forEach((r, k) => { if (!r.abortar) restablecer(k) }) }, '⟲ Restablecer el ejemplo'), ejemplo.guia ? h('button', { class: 'ir-guia', 'data-guia': ejemplo.guia }, 'La explicación, en la guía') : null),
+    h('div', { class: 'fila-botones' }, h('button', { class: 'primario', onclick: () => ejemplo.variantes.forEach((_, k) => { if (!abortar[k]) correr(k) }) }, '▶▶ Ejecutar las dos a la vez'), ejemplo.guia ? h('button', { class: 'ir-guia', 'data-guia': ejemplo.guia }, 'La explicación, en la guía') : null),
     h('div', { class: 'dos-columnas' }, columnas),
-    h('h3', {}, 'Comparación'), comparacion)
+    h('h3', {}, 'Comparación de las dos versiones que estás viendo'), comparacion)
+}
+
+// ---------- comparador libre: dos versiones cualesquiera, lado a lado ----------
+function pintarComparador() {
+  const caja = $('#comparador-vivo')
+  if (!caja) return
+  const todas = VIVO.ejecuciones.filter((e) => e.terminado)
+  if (todas.length < 2) { caja.replaceChildren(h('h2', {}, 'Comparador de versiones'), h('p', { class: 'ayuda' }, 'Cuando haya al menos dos versiones guardadas podrás poner aquí dos cualesquiera, de cualquier ejemplo, lado a lado.')); return }
+  const previas = $$('select', caja).map((s) => s.value)
+  const selector = (porDefecto) => h('select', { class: 'versiones' }, todas.map((v) => h('option', { value: v.id, selected: v.id === porDefecto }, `${nombreVersion(v)} · ${hora(v.fecha)} · ${aciertos(v)}`)))
+  const existe = (id) => todas.some((v) => v.id === id)
+  const ultima = (ejemplo, variante) => todas.filter((v) => v.ejemplo === ejemplo && v.variante === variante).at(-1)?.id
+  const selectores = [selector(existe(previas[0]) ? previas[0] : ultima('harness', 'sin') ?? todas.at(-2).id), selector(existe(previas[1]) ? previas[1] : ultima('harness', 'con') ?? todas.at(-1).id)]
+  const webs = h('div', { class: 'dos-columnas' })
+  const tabla = h('div', {})
+  const pintar = async () => {
+    const ids = selectores.map((s) => s.value)
+    const [a, b] = await Promise.all(ids.map(cargarVersion))
+    webs.replaceChildren(...ids.map((id) => h('div', { class: 'col-vivo' }, marcoWeb(id))))
+    tabla.innerHTML = tablaComparada(a, b, ids.map((id) => nombreVersion(todas.find((v) => v.id === id))), false)
+  }
+  selectores.forEach((s) => (s.onchange = pintar))
+  caja.replaceChildren(h('h2', {}, 'Comparador de versiones'), h('p', { class: 'ayuda' }, 'Dos versiones cualesquiera, de cualquier ejemplo, lado a lado: por ejemplo «Solo el modelo» frente a «Con el harness».'), h('div', { class: 'dos-columnas selectores' }, selectores), webs, tabla)
+  pintar()
 }
 
 window.iniciarVivo = async function () {
   const vista = $('#vista-vivo')
   if (vista.childElementCount) return
-  vista.append(h('h1', {}, 'En vivo'), h('p', { class: 'lema' }, 'El mismo prompt, lanzado dos veces con Claude Code de verdad: una sin la pieza y otra con ella. Ves cada fichero que lee, cada comando y cada parada, y al final el resultado y las comprobaciones de las dos, lado a lado.'))
-  let estado = null
-  try { if (location.protocol.startsWith('http')) estado = await (await fetch('/api/estado')).json() } catch { /* sin servidor */ }
-  if (!estado) {
+  vista.append(h('h1', {}, 'En vivo'), h('p', { class: 'lema' }, 'El mismo encargo, lanzado dos veces con Claude Code de verdad: una sin la pieza y otra con ella. Ves la web que deja cada una, todo lo que hizo para llegar ahí y si cumple lo que el equipo espera.'))
+  vista.append(h('p', { class: 'ayuda' }, 'Estos seis ejemplos son la ruta resumida entera: en esa ruta, la Guía y el Taller enseñan solo lo que explica cada uno. Las rutas media y completa añaden el resto del curso en esas dos pestañas; aquí los ejemplos son los mismos.'))
+  try { if (location.protocol.startsWith('http')) VIVO = await (await fetch('/api/estado')).json() } catch { /* sin servidor */ }
+  if (!VIVO) {
     vista.append(h('div', { class: 'panel' }, h('h3', {}, 'Para ejecutar los ejemplos hay que arrancar el servidor local'),
       h('p', {}, 'Esta página está abierta como fichero y desde ahí no puede lanzar nada. En la carpeta del repositorio:'),
       h('figure', { class: 'codigo' }, h('figcaption', {}, 'bash', h('button', { class: 'copiar' }, 'Copiar')), h('pre', {}, h('code', {}, 'node servidor.mjs'))),
       h('p', {}, 'y abre ', h('a', { href: 'http://localhost:5400' }, 'http://localhost:5400'), '. Necesitas Node 20 o superior, git y Claude Code instalado con tu sesión iniciada (', h('code', {}, 'claude'), ' en la terminal). Los ejemplos usan tu suscripción y el modelo Opus 5.5.')))
     return
   }
-  vista.append(h('div', { class: `panel ${estado.claude ? '' : 'sin-claude'}` },
-    estado.claude ? h('p', {}, h('span', { class: 'pastilla verde' }, 'Listo'), ` Claude Code ${estado.claude} · modelo `, h('code', {}, estado.modelo), '. Cada ejecución consume de tu suscripción y tarda entre medio minuto y unos minutos.')
+  vista.append(h('div', { class: `panel ${VIVO.claude ? '' : 'sin-claude'}` },
+    h('p', { class: 'num' }, 'El encargo, el mismo en todos los ejemplos'),
+    h('figure', { class: 'codigo encargo' }, h('figcaption', {}, 'prompt', h('button', { class: 'copiar' }, 'Copiar')), h('pre', {}, h('code', {}, VIVO.encargo))),
+    VIVO.claude ? h('p', {}, h('span', { class: 'pastilla verde' }, 'Listo'), ` Claude Code ${VIVO.claude} · modelo `, h('code', {}, VIVO.modelo), '. Cada ejecución consume de tu suscripción y tarda entre 1 y 4 minutos.')
       : h('p', {}, h('span', { class: 'pastilla roja' }, 'Falta Claude Code'), ' El servidor no encuentra el comando ', h('code', {}, 'claude'), '. Instálalo, inicia sesión y vuelve a arrancar el servidor.'),
-    h('p', { class: 'ayuda' }, 'Cada columna trabaja sobre una copia temporal y limpia del proyecto demo, así que no toca tu repositorio. El agente puede leer, editar y lanzar los comandos del proyecto; lo demás se deniega y se ve en el registro. Los resultados se guardan en este navegador.'),
-    h('div', { class: 'fila-botones' },
-      h('button', { onclick: () => h('a', { href: URL.createObjectURL(new Blob([JSON.stringify(corridas, null, 2)], { type: 'application/json' })), download: 'en-vivo-540.json' }).click() }, 'Exportar resultados'),
-      h('button', { onclick: () => { if (confirm('¿Borrar todos los resultados guardados de En vivo?')) { corridas = {}; guardarCorridas(); vista.replaceChildren(); window.iniciarVivo() } } }, 'Borrar resultados'))))
-  estado.ejemplos.forEach((ejemplo, i) => vista.append(pintarEjemplo(ejemplo, i)))
+    h('p', { class: 'ayuda' }, 'El proyecto de partida es una Pokédex de Kanto con buscador (06-en-vivo/pokedex). Cada ejecución trabaja sobre una copia propia y queda guardada como una versión (v1, v2…) que puedes volver a cargar, abrir y comparar. El agente trabaja aislado: puede lanzar cualquier comando, pero solo escribe dentro de su copia y no tiene red.'),
+    h('p', {}, h('a', { href: `http://${location.hostname}:${VIVO.puertoWebs}/base/index.html`, target: '_blank', rel: 'noopener' }, 'Ver el proyecto de partida ↗'))))
+  VIVO.ejemplos.forEach((ejemplo, i) => vista.append(pintarEjemplo(ejemplo, i)))
+  vista.append(h('section', { class: 'panel', id: 'comparador-vivo' }))
+  pintarComparador()
   aplicarEdicion()
 }

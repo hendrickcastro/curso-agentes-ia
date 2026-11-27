@@ -1,9 +1,9 @@
 # Taller
 
-Formato de este fichero: cada `## ` es un ejercicio; la línea `@` lleva tiempo (min), qué hace falta, la herramienta del laboratorio, la sección de la guía y, con `agente=si`, que entra en la ruta «Agente». Las etiquetas {R} {M} {C} son las rutas. `node 04-site/build.mjs` lo convierte en la vista Taller del site.
+Formato de este fichero: cada `## ` es un ejercicio; la línea `@` lleva tiempo (min), qué hace falta, la herramienta del laboratorio, la sección de la guía y, con `vivo=si`, que entra en la ruta resumida (la de los ejemplos en vivo); los demás {R} empiezan en la media. Las etiquetas {R} {M} {C} son las rutas. `node 04-site/build.mjs` lo convierte en la vista Taller del site.
 
 ## Prepara el terreno {R}
-@ tiempo=5; necesita=Terminal, Node 20+, git; guia=m00
+@ tiempo=5; necesita=Terminal, Node 20+, git; guia=m00; vivo=si
 
 ### Haz
 
@@ -33,7 +33,7 @@ Un ✅, o el error tal cual si no te sale.
 Para volver al punto de partida en cualquier momento: `git switch -f main && git checkout . && git clean -fd`. En Windows usa Git Bash o WSL.
 
 ## Pide sin red {R}
-@ tiempo=10; necesita=Tu agente; lab=cuaderno; guia=m00
+@ tiempo=10; necesita=Tu agente; lab=cuaderno; guia=m00; vivo=si
 
 ### Haz
 
@@ -74,7 +74,7 @@ Ficheros tocados y una decisión que tomó sin preguntarte.
 Para saber si está bien, lo tienes que leer entero. Has pedido, no has delegado.
 
 ## Lo que no está escrito no existe {R}
-@ tiempo=8; necesita=Tu agente; lab=contexto; guia=m02; agente=si
+@ tiempo=8; necesita=Tu agente; lab=contexto; guia=m02; vivo=si
 
 ### Haz
 
@@ -100,7 +100,7 @@ Qué contestó en cada rama, en una línea.
 El agente solo sabe lo que cabe en su ventana, y un `AGENTS.md` corto que apunta al sitio vale más que uno largo. **Sin agente:** en el laboratorio, Ventana de contexto, sube los MCP de 0 a 8 y busca en qué turno cruzas el 60 %.
 
 ## Para en el plan {R}
-@ tiempo=12; necesita=Tu agente; lab=cuaderno; guia=m03; agente=si
+@ tiempo=12; necesita=Tu agente; lab=cuaderno; guia=m03; vivo=si
 
 ### Haz
 
@@ -191,7 +191,7 @@ Paso 4   src/ui/legacy/viejaVista.mjs: tenía 1, ahora 2                  códig
 Si avisa pero no detiene, es un informe. Y un repositorio viejo no tiene que cumplir: solo no empeorar. Lo viejo pasa, lo nuevo detiene, la línea solo baja.
 
 ## El hook para al agente {R}
-@ tiempo=8; necesita=Terminal (mejor con Claude Code); lab=cuaderno; guia=m05-el-hook-de-punta-a-punta; agente=si
+@ tiempo=8; necesita=Terminal (mejor con Claude Code); lab=cuaderno; guia=m05-el-hook-de-punta-a-punta; vivo=si
 
 ### Haz
 
@@ -229,7 +229,7 @@ En vivo con Claude Code: edita, el hook lo para, lee el motivo y lo corrige solo
 El código 2 y el motivo por stderr son lo que hace que el aviso lo lea el agente y no tú. Una regla escrita se cumple casi siempre; un hook, siempre.
 
 ## Una skill por dentro {R}
-@ tiempo=6; necesita=Terminal; guia=m06-que-es-una-skill; agente=si
+@ tiempo=6; necesita=Terminal; guia=m06-que-es-una-skill; vivo=si
 
 ### Haz
 

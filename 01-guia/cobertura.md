@@ -6,21 +6,21 @@ Las 166 diapositivas del curso están cubiertas en la ruta completa. La columna 
 
 | Diapositiva | Dónde se explica | Ruta |
 |---|---|---|
-| [D1·1](../00-material-original/diapositivas/dia1/01.jpg) | La tesis: pedir no es delegar | Resumida |
+| [D1·1](../00-material-original/diapositivas/dia1/01.jpg) | La tesis: pedir no es delegar | Media |
 | [D1·2](../00-material-original/diapositivas/dia1/02.jpg) | La tesis: pedir no es delegar › Qué no es esto y cómo se trabaja | Completa |
 | [D1·3](../00-material-original/diapositivas/dia1/03.jpg) | La tesis: pedir no es delegar › El punto de partida | Media |
-| [D1·4](../00-material-original/diapositivas/dia1/04.jpg) | La tesis: pedir no es delegar | Resumida |
-| [D1·5](../00-material-original/diapositivas/dia1/05.jpg) | La tesis: pedir no es delegar | Resumida |
+| [D1·4](../00-material-original/diapositivas/dia1/04.jpg) | La tesis: pedir no es delegar | Media |
+| [D1·5](../00-material-original/diapositivas/dia1/05.jpg) | La tesis: pedir no es delegar | Media |
 | [D1·6](../00-material-original/diapositivas/dia1/06.jpg) | La tesis: pedir no es delegar › Tres términos, un significado cada uno | Media |
 | [D1·7](../00-material-original/diapositivas/dia1/07.jpg) | La tesis: pedir no es delegar › El ecosistema | Media |
-| [D1·8](../00-material-original/diapositivas/dia1/08.jpg) | La tesis: pedir no es delegar › Pedir frente a delegar | Resumida |
-| [D1·9](../00-material-original/diapositivas/dia1/09.jpg) | La tesis: pedir no es delegar › Pedir frente a delegar | Resumida |
-| [D1·10](../00-material-original/diapositivas/dia1/10.jpg) | La tesis: pedir no es delegar › Por qué con personas sí funciona | Resumida |
-| [D1·11](../00-material-original/diapositivas/dia1/11.jpg) | La tesis: pedir no es delegar › La IA replica y amplifica lo que encuentra | Resumida |
-| [D1·12](../00-material-original/diapositivas/dia1/12.jpg) | La tesis: pedir no es delegar › La escalera de fallos | Resumida |
-| [D1·13](../00-material-original/diapositivas/dia1/13.jpg) | La tesis: pedir no es delegar › La escalera de fallos | Resumida |
-| [D1·14](../00-material-original/diapositivas/dia1/14.jpg) | La tesis: pedir no es delegar › La escalera de fallos | Resumida |
-| [D1·15](../00-material-original/diapositivas/dia1/15.jpg) | La tesis: pedir no es delegar › La escalera de fallos | Resumida |
+| [D1·8](../00-material-original/diapositivas/dia1/08.jpg) | La tesis: pedir no es delegar › Pedir frente a delegar | Media |
+| [D1·9](../00-material-original/diapositivas/dia1/09.jpg) | La tesis: pedir no es delegar › Pedir frente a delegar | Media |
+| [D1·10](../00-material-original/diapositivas/dia1/10.jpg) | La tesis: pedir no es delegar › Por qué con personas sí funciona | Media |
+| [D1·11](../00-material-original/diapositivas/dia1/11.jpg) | La tesis: pedir no es delegar › La IA replica y amplifica lo que encuentra | Media |
+| [D1·12](../00-material-original/diapositivas/dia1/12.jpg) | La tesis: pedir no es delegar › La escalera de fallos | Media |
+| [D1·13](../00-material-original/diapositivas/dia1/13.jpg) | La tesis: pedir no es delegar › La escalera de fallos | Media |
+| [D1·14](../00-material-original/diapositivas/dia1/14.jpg) | La tesis: pedir no es delegar › La escalera de fallos | Media |
+| [D1·15](../00-material-original/diapositivas/dia1/15.jpg) | La tesis: pedir no es delegar › La escalera de fallos | Media |
 | [D1·16](../00-material-original/diapositivas/dia1/16.jpg) | La tesis: pedir no es delegar › Antes y después del curso | Completa |
 | [D1·17](../00-material-original/diapositivas/dia1/17.jpg) | La tesis: pedir no es delegar › Qué no es esto y cómo se trabaja | Completa |
 | [D1·18](../00-material-original/diapositivas/dia1/18.jpg) | La tesis: pedir no es delegar › Dónde estaba el cuello de botella | Media |
@@ -67,20 +67,20 @@ Las 166 diapositivas del curso están cubiertas en la ruta completa. La columna 
 | [D1·59](../00-material-original/diapositivas/dia1/59.jpg) | RPI: Research, Plan, Implement › Práctica 3 · El mismo prompt por fases (10 min, individual) | Media |
 | [D1·60](../00-material-original/diapositivas/dia1/60.jpg) | RPI: Research, Plan, Implement › Debate (10 min) | Completa |
 | [D1·61](../00-material-original/diapositivas/dia1/61.jpg) | RPI: Research, Plan, Implement › El límite de RPI | Resumida |
-| [D1·62](../00-material-original/diapositivas/dia1/62.jpg) | Garantías | Resumida |
-| [D1·63](../00-material-original/diapositivas/dia1/63.jpg) | Garantías › La pregunta | Resumida |
-| [D1·64](../00-material-original/diapositivas/dia1/64.jpg) | Garantías › No es una herramienta: es una red | Resumida |
-| [D1·65](../00-material-original/diapositivas/dia1/65.jpg) | Garantías › No es una herramienta: es una red › Terreno firme: lo que ya no discute nadie | Resumida |
+| [D1·62](../00-material-original/diapositivas/dia1/62.jpg) | Garantías | Media |
+| [D1·63](../00-material-original/diapositivas/dia1/63.jpg) | Garantías › La pregunta | Media |
+| [D1·64](../00-material-original/diapositivas/dia1/64.jpg) | Garantías › No es una herramienta: es una red | Media |
+| [D1·65](../00-material-original/diapositivas/dia1/65.jpg) | Garantías › No es una herramienta: es una red › Terreno firme: lo que ya no discute nadie | Media |
 | [D1·66](../00-material-original/diapositivas/dia1/66.jpg) | Garantías › No es una herramienta: es una red › Maduro, pero hay que elegir | Media |
 | [D1·67](../00-material-original/diapositivas/dia1/67.jpg) | Garantías › No es una herramienta: es una red › El frente abierto: la especificación | Media |
 | [D1·68](../00-material-original/diapositivas/dia1/68.jpg) | Garantías › No es una herramienta: es una red › El frente abierto: la especificación | Media |
-| [D1·69](../00-material-original/diapositivas/dia1/69.jpg) | Garantías › Cuándo se ejecuta cada garantía | Resumida |
-| [D1·70](../00-material-original/diapositivas/dia1/70.jpg) | Garantías › Dos reglas que separan una garantía de un adorno | Resumida |
-| [D1·71](../00-material-original/diapositivas/dia1/71.jpg) | Garantías › Dos reglas que separan una garantía de un adorno | Resumida |
+| [D1·69](../00-material-original/diapositivas/dia1/69.jpg) | Garantías › Cuándo se ejecuta cada garantía | Media |
+| [D1·70](../00-material-original/diapositivas/dia1/70.jpg) | Garantías › Dos reglas que separan una garantía de un adorno | Media |
+| [D1·71](../00-material-original/diapositivas/dia1/71.jpg) | Garantías › Dos reglas que separan una garantía de un adorno | Media |
 | [D1·72](../00-material-original/diapositivas/dia1/72.jpg) | Garantías › Autodiagnóstico (8 min, individual) | Media |
-| [D1·73](../00-material-original/diapositivas/dia1/73.jpg) | Garantías › El ratchet | Resumida |
-| [D1·74](../00-material-original/diapositivas/dia1/74.jpg) | Garantías › El ratchet | Resumida |
-| [D1·75](../00-material-original/diapositivas/dia1/75.jpg) | Garantías › El límite de las garantías | Resumida |
+| [D1·73](../00-material-original/diapositivas/dia1/73.jpg) | Garantías › El ratchet | Media |
+| [D1·74](../00-material-original/diapositivas/dia1/74.jpg) | Garantías › El ratchet | Media |
+| [D1·75](../00-material-original/diapositivas/dia1/75.jpg) | Garantías › El límite de las garantías | Media |
 | [D1·76](../00-material-original/diapositivas/dia1/76.jpg) | Guardarraíles | Resumida |
 | [D1·77](../00-material-original/diapositivas/dia1/77.jpg) | Guardarraíles › El criterio es el de tu equipo | Media |
 | [D1·78](../00-material-original/diapositivas/dia1/78.jpg) | Guardarraíles › Tres escalones | Resumida |
@@ -112,28 +112,28 @@ Las 166 diapositivas del curso están cubiertas en la ruta completa. La columna 
 | [D2·13](../00-material-original/diapositivas/dia2/13.jpg) | El sistema: skills y workflow › El límite del sistema | Resumida |
 | [D2·14](../00-material-original/diapositivas/dia2/14.jpg) | El sistema: skills y workflow › El límite del sistema | Resumida |
 | [D2·15](../00-material-original/diapositivas/dia2/15.jpg) | El sistema: skills y workflow › El límite del sistema | Resumida |
-| [D2·16](../00-material-original/diapositivas/dia2/16.jpg) | Especificación | Resumida |
-| [D2·17](../00-material-original/diapositivas/dia2/17.jpg) | Especificación › La condición de parada | Resumida |
-| [D2·18](../00-material-original/diapositivas/dia2/18.jpg) | Especificación › Describir no es especificar | Resumida |
-| [D2·19](../00-material-original/diapositivas/dia2/19.jpg) | Especificación › Las cuatro piezas de una definición que sirve | Resumida |
+| [D2·16](../00-material-original/diapositivas/dia2/16.jpg) | Especificación | Media |
+| [D2·17](../00-material-original/diapositivas/dia2/17.jpg) | Especificación › La condición de parada | Media |
+| [D2·18](../00-material-original/diapositivas/dia2/18.jpg) | Especificación › Describir no es especificar | Media |
+| [D2·19](../00-material-original/diapositivas/dia2/19.jpg) | Especificación › Las cuatro piezas de una definición que sirve | Media |
 | [D2·20](../00-material-original/diapositivas/dia2/20.jpg) | Especificación › De revisar el plan a definir la tarea | Media |
 | [D2·21](../00-material-original/diapositivas/dia2/21.jpg) | Especificación › La especificación mínima solo parece barata | Media |
 | [D2·22](../00-material-original/diapositivas/dia2/22.jpg) | Especificación › Cuánto merece cada tipo de trabajo | Media |
 | [D2·23](../00-material-original/diapositivas/dia2/23.jpg) | Especificación › Práctica 7 · Especificar en vez de implementar (10 min, individual) | Media |
 | [D2·24](../00-material-original/diapositivas/dia2/24.jpg) | Especificación › Debate (7 min) | Completa |
 | [D2·25](../00-material-original/diapositivas/dia2/25.jpg) | Especificación › SDD: la especificación por delante | Media |
-| [D2·26](../00-material-original/diapositivas/dia2/26.jpg) | Especificación › El límite de la especificación | Resumida |
-| [D2·27](../00-material-original/diapositivas/dia2/27.jpg) | Verificación | Resumida |
-| [D2·28](../00-material-original/diapositivas/dia2/28.jpg) | Verificación › El cuello de botella se mueve otra vez | Resumida |
-| [D2·29](../00-material-original/diapositivas/dia2/29.jpg) | Verificación › El cuello de botella se mueve otra vez | Resumida |
-| [D2·30](../00-material-original/diapositivas/dia2/30.jpg) | Verificación › Tres carriles | Resumida |
-| [D2·31](../00-material-original/diapositivas/dia2/31.jpg) | Verificación › El carril se decide en un embudo | Resumida |
+| [D2·26](../00-material-original/diapositivas/dia2/26.jpg) | Especificación › El límite de la especificación | Media |
+| [D2·27](../00-material-original/diapositivas/dia2/27.jpg) | Verificación | Media |
+| [D2·28](../00-material-original/diapositivas/dia2/28.jpg) | Verificación › El cuello de botella se mueve otra vez | Media |
+| [D2·29](../00-material-original/diapositivas/dia2/29.jpg) | Verificación › El cuello de botella se mueve otra vez | Media |
+| [D2·30](../00-material-original/diapositivas/dia2/30.jpg) | Verificación › Tres carriles | Media |
+| [D2·31](../00-material-original/diapositivas/dia2/31.jpg) | Verificación › El carril se decide en un embudo | Media |
 | [D2·32](../00-material-original/diapositivas/dia2/32.jpg) | Verificación › Práctica 8 · Tres reglas (20 min, individual y por el chat) | Media |
 | [D2·33](../00-material-original/diapositivas/dia2/33.jpg) | Verificación › Debate (10 min) | Completa |
-| [D2·34](../00-material-original/diapositivas/dia2/34.jpg) | Verificación › Pedirle que no toque los tests no funciona | Resumida |
-| [D2·35](../00-material-original/diapositivas/dia2/35.jpg) | Verificación › La red puede crecer sola; no puede encogerse sin que nadie lo vea | Resumida |
-| [D2·36](../00-material-original/diapositivas/dia2/36.jpg) | Verificación › El carril verde se abre con evidencia, no con fe | Resumida |
-| [D2·37](../00-material-original/diapositivas/dia2/37.jpg) | Verificación › El límite de la verificación | Resumida |
+| [D2·34](../00-material-original/diapositivas/dia2/34.jpg) | Verificación › Pedirle que no toque los tests no funciona | Media |
+| [D2·35](../00-material-original/diapositivas/dia2/35.jpg) | Verificación › La red puede crecer sola; no puede encogerse sin que nadie lo vea | Media |
+| [D2·36](../00-material-original/diapositivas/dia2/36.jpg) | Verificación › El carril verde se abre con evidencia, no con fe | Media |
+| [D2·37](../00-material-original/diapositivas/dia2/37.jpg) | Verificación › El límite de la verificación | Media |
 | [D2·38](../00-material-original/diapositivas/dia2/38.jpg) | Después de delegar | Media |
 | [D2·39](../00-material-original/diapositivas/dia2/39.jpg) | Después de delegar | Media |
 | [D2·40](../00-material-original/diapositivas/dia2/40.jpg) | Después de delegar › Worktrees: un agente, una copia | Media |
@@ -168,12 +168,12 @@ Las 166 diapositivas del curso están cubiertas en la ruta completa. La columna 
 | [D2·69](../00-material-original/diapositivas/dia2/69.jpg) | Otros temas › MCP solo cuando aporta algo que la CLI no da | Completa |
 | [D2·70](../00-material-original/diapositivas/dia2/70.jpg) | Otros temas › Tres riesgos reales | Completa |
 | [D2·71](../00-material-original/diapositivas/dia2/71.jpg) | Otros temas › Lo que está por venir | Completa |
-| [D2·72](../00-material-original/diapositivas/dia2/72.jpg) | Cierre: la escala de uso | Resumida |
-| [D2·73](../00-material-original/diapositivas/dia2/73.jpg) | Cierre: la escala de uso › La escala de uso | Resumida |
-| [D2·74](../00-material-original/diapositivas/dia2/74.jpg) | Cierre: la escala de uso › La escala de uso | Resumida |
-| [D2·75](../00-material-original/diapositivas/dia2/75.jpg) | Cierre: la escala de uso › La escala de uso | Resumida |
-| [D2·76](../00-material-original/diapositivas/dia2/76.jpg) | Cierre: la escala de uso › La escala de uso | Resumida |
+| [D2·72](../00-material-original/diapositivas/dia2/72.jpg) | Cierre: la escala de uso | Media |
+| [D2·73](../00-material-original/diapositivas/dia2/73.jpg) | Cierre: la escala de uso › La escala de uso | Media |
+| [D2·74](../00-material-original/diapositivas/dia2/74.jpg) | Cierre: la escala de uso › La escala de uso | Media |
+| [D2·75](../00-material-original/diapositivas/dia2/75.jpg) | Cierre: la escala de uso › La escala de uso | Media |
+| [D2·76](../00-material-original/diapositivas/dia2/76.jpg) | Cierre: la escala de uso › La escala de uso | Media |
 | [D2·77](../00-material-original/diapositivas/dia2/77.jpg) | Cierre: la escala de uso › Antes y después | Completa |
-| [D2·78](../00-material-original/diapositivas/dia2/78.jpg) | Cierre: la escala de uso | Resumida |
+| [D2·78](../00-material-original/diapositivas/dia2/78.jpg) | Cierre: la escala de uso | Media |
 | [D2·79](../00-material-original/diapositivas/dia2/79.jpg) | Cierre: la escala de uso › Recursos | Completa |
 | [D2·80](../00-material-original/diapositivas/dia2/80.jpg) | Cierre: la escala de uso › Recursos | Completa |
