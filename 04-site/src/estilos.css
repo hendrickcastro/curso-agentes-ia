@@ -106,7 +106,10 @@ body.editando .rejilla button.quitado::after{content:"Restaurar"}
 .ev.herr code{font-size:12px}
 .ev.res summary,.ev.error summary,.ev.hook,.ev.inicio{color:var(--suave)}
 .ev.error summary,.ev.aviso{color:var(--rojo); white-space:pre-wrap}
-.ev.fallo summary,.ev.denegado{color:var(--aviso)}
+.ev.fallo summary{color:var(--suave)}
+.ev.denegado{color:var(--aviso)}
+.estado-vivo{margin:10px 0 0; padding:8px 12px; border-radius:8px; background:var(--acento-suave); font-weight:600; animation:latido 1.6s ease-in-out infinite}
+@keyframes latido{50%{opacity:.55}}
 .ev.paro{background:var(--rojo-suave); color:var(--rojo); border-radius:6px; padding:6px 8px; margin:4px 0; font-weight:600}
 .ev pre,.resultado-vivo pre{white-space:pre-wrap; overflow-wrap:anywhere; background:var(--codigo); border-radius:6px; padding:8px 10px; margin:4px 0; font-size:12px; font-weight:400; color:var(--tinta); max-height:320px; overflow:auto}
 .resultado-vivo h4{margin:14px 0 4px; font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--suave)}

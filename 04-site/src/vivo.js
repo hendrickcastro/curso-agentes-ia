@@ -45,7 +45,7 @@ function entradasDe(evento, corrida) {
     })
   }
   if (evento.type === 'user') {
-    return (Array.isArray(evento.message?.content) ? evento.message.content : []).filter((c) => c.type === 'tool_result' && !(c.is_error && /^Permission for this tool use was denied/.test(textoDe(c.content)))).map((c) => ({ t: c.is_error ? 'fallo' : 'res', texto: corto(textoDe(c.content).replaceAll(`/private${dir}/`, '').replaceAll(`${dir}/`, ''), 1200) }))
+    return (Array.isArray(evento.message?.content) ? evento.message.content : []).filter((c) => c.type === 'tool_result' && !(c.is_error && /^Permission for this tool use was denied/.test(textoDe(c.content)))).map((c) => { const texto = textoDe(c.content).replaceAll(`/private${dir}/`, '').replaceAll(`${dir}/`, ''); const codigo = c.is_error ? (/^Exit code (\d+)/.exec(texto)?.[1] ?? '≠0') : null; return { t: c.is_error ? 'fallo' : 'res', codigo, texto: corto(texto.replace(/^Exit code \d+\n?/, ''), 1200) } })
   }
   if (evento.type === 'result') {
     Object.assign(corrida.metricas, { turnos: evento.num_turns, segundos: Math.round((evento.duration_ms ?? 0) / 1000), coste: evento.total_cost_usd, salida: evento.usage?.output_tokens, denegados: (evento.permission_denials ?? []).length })
@@ -57,7 +57,12 @@ function entradasDe(evento, corrida) {
 
 const ICONO = { inicio: '●', texto: '💬', herr: '🔧', res: '↩', fallo: '↩', denegado: '🚫', error: '✘', hook: '✓', paro: '⛔', aviso: '⚠' }
 function nodoEntrada(e) {
-  if (['res', 'fallo', 'error'].includes(e.t)) return h('details', { class: `ev ${e.t}` }, h('summary', {}, `${ICONO[e.t]} ${{ res: 'Resultado', fallo: 'El comando devolvió un error (el agente lo lee y sigue)', error: 'Error' }[e.t]} · ${e.texto.split('\n')[0].slice(0, 90)}`), h('pre', {}, e.texto))
+  if (['res', 'fallo', 'error'].includes(e.t)) {
+    const lineas = e.texto.split('\n').filter((l) => l.trim())
+    const muestra = (lineas.find((l) => l.trim().length > 3) ?? lineas[0] ?? '(sin salida)').trim().slice(0, 80)
+    const etiqueta = { res: 'Resultado', fallo: `Resultado (el comando salió con código ${e.codigo ?? '≠0'})`, error: 'Error' }[e.t]
+    return h('details', { class: `ev ${e.t}` }, h('summary', {}, `${ICONO[e.t]} ${etiqueta} · ${muestra}${lineas.length > 1 ? ` … (${lineas.length} líneas, pulsa para verlas)` : ''}`), h('pre', {}, e.texto || '(sin salida)'))
+  }
   if (e.t === 'herr') return h('div', { class: 'ev herr' }, `${ICONO.herr} `, h('b', {}, e.nombre), ' ', h('code', {}, e.texto))
   if (e.t === 'paro') return h('div', { class: 'ev paro' }, `${ICONO.paro} ${e.texto}`, e.detalle ? h('pre', {}, e.detalle) : null)
   return h('div', { class: `ev ${e.t}` }, `${ICONO[e.t] ?? ''} ${e.texto}`)
@@ -133,6 +138,13 @@ async function lanzar(ejemplo, variante, refs, alTerminar) {
   await turno()
   refs.boton.textContent = '■ Detener'
   refs.registro.replaceChildren()
+  const inicio = Date.now()
+  let fase = 'arrancando Claude Code'
+  const estado = h('p', { class: 'estado-vivo' })
+  const latido = () => (estado.textContent = `⏳ En marcha · ${Math.round((Date.now() - inicio) / 1000)} s · ${fase}. Suele tardar entre 20 segundos y 2 minutos.`)
+  refs.resultado.replaceChildren(estado)
+  latido()
+  const reloj = setInterval(latido, 1000)
   try {
     if (control.signal.aborted) throw new Error('detenida')
     const respuesta = await fetch(`/api/ejecutar?ejemplo=${ejemplo.id}&variante=${variante.id}`, { method: 'POST', signal: control.signal })
@@ -149,7 +161,14 @@ async function lanzar(ejemplo, variante, refs, alTerminar) {
         if (!parte.startsWith('data: ')) continue
         const dato = JSON.parse(parte.slice(6))
         if (dato.tipo === 'preparado') { corrida.dir = dato.dir; corrida.modelo = dato.modelo; anotar({ t: 'inicio', texto: `Copia limpia del proyecto${dato.quitar.length ? `, sin: ${dato.quitar.join(', ')}` : ', con todo'}.` }) }
-        if (dato.tipo === 'evento') entradasDe(dato.evento, corrida).forEach(anotar)
+        if (dato.tipo === 'evento') {
+          const ev = dato.evento
+          if (ev.type === 'system' && ev.subtype === 'thinking_tokens') fase = 'el modelo está pensando'
+          if (ev.type === 'assistant') { const uso = (ev.message?.content ?? []).find((c) => c.type === 'tool_use'); fase = uso ? `usando ${uso.name}` : 'escribiendo' }
+          if (ev.type === 'user') fase = 'leyendo el resultado y decidiendo el siguiente paso'
+          if (ev.type === 'result') fase = 'terminado; lanzando las comprobaciones'
+          entradasDe(ev, corrida).forEach(anotar)
+        }
         if (dato.tipo === 'aviso') anotar({ t: 'aviso', texto: dato.texto })
         if (dato.tipo === 'cambios') corrida.cambios = { ficheros: dato.ficheros, diff: dato.diff }
         if (dato.tipo === 'fichero') corrida.ficheros.push({ ruta: dato.ruta, contenido: dato.contenido })
@@ -160,6 +179,7 @@ async function lanzar(ejemplo, variante, refs, alTerminar) {
   } catch (error) {
     anotar({ t: 'aviso', texto: `No se pudo ejecutar: ${error.message}` })
   }
+  clearInterval(reloj)
   soltar()
   refs.abortar = null
   // Una ejecución detenida no se guarda: la columna vuelve a como estaba antes de lanzarla.
