@@ -122,6 +122,8 @@ body.editando .rejilla button.quitado::after{content:"Restaurar"}
 .resultado-vivo h4{margin:14px 0 4px; font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--suave)}
 .resultado-vivo pre.respuesta,.resultado-vivo pre.fichero{font-size:13px; border:1px solid var(--linea)}
 .comprobacion summary{cursor:pointer; padding:3px 0}
+.comprobacion summary small{color:var(--suave)}
+.veredicto{padding:10px 14px; border-radius:10px; font-weight:600}
 .sin-claude{border-color:var(--rojo)}
 button:disabled{opacity:.6; cursor:progress}
 @media (max-width:900px){.dos-columnas{grid-template-columns:1fr}}
@@ -2361,18 +2363,22 @@ function pintarColumna(caja, ejemplo, variante) {
     registro, resultado].filter(Boolean))
   if (!corrida) { registro.append(h('p', { class: 'ayuda' }, 'Todavía sin ejecutar.')); return { boton, reset, registro, resultado } }
   corrida.registro.forEach((e) => registro.append(nodoEntrada(e)))
-  pintarResultado(resultado, corrida)
+  pintarResultado(resultado, corrida, ejemplo.variantes[0].id === variante.id)
   return { boton, reset, registro, resultado }
 }
 
-function pintarResultado(caja, corrida) {
+// esBase: la columna a la que le falta la pieza. Ahí un «no» es lo que el ejemplo quiere enseñar, no un fallo.
+function pintarResultado(caja, corrida, esBase) {
   const m = corrida.metricas
   caja.replaceChildren()
   if (corrida.respuesta) caja.append(h('h4', {}, 'Respuesta final'), h('pre', { class: 'respuesta' }, corrida.respuesta))
   for (const f of corrida.ficheros ?? []) caja.append(h('h4', {}, `Lo que dejó en ${f.ruta}`), f.contenido == null ? h('p', { class: 'ayuda' }, 'No creó ese fichero.') : h('pre', { class: 'fichero' }, f.contenido))
   if (corrida.comprobaciones?.length) {
-    caja.append(h('h4', {}, 'Comprobaciones (las lanza el servidor, no el agente)'))
-    for (const c of corrida.comprobaciones) caja.append(h('details', { class: 'comprobacion' }, h('summary', {}, h('span', { class: `pastilla ${c.bien ? 'verde' : 'roja'}` }, c.bien ? '✔' : '✘'), ` ${c.nombre}`), c.cmd ? h('p', { class: 'ayuda' }, h('code', {}, c.cmd)) : null, h('pre', {}, c.detalle)))
+    caja.append(h('h4', {}, '¿Lo consiguió? Lo comprueba el servidor, no el agente'))
+    for (const c of corrida.comprobaciones) {
+      const nota = c.bien ? '' : esBase ? ' — lo esperable sin esta pieza' : ' — no era lo esperado: el modelo no es determinista, repite la ejecución'
+      caja.append(h('details', { class: 'comprobacion' }, h('summary', {}, h('span', { class: `pastilla ${c.bien ? 'verde' : esBase ? 'ambar' : 'roja'}` }, c.bien ? 'Sí' : 'No'), ` ${c.nombre}`, h('small', {}, nota)), c.cmd ? h('p', { class: 'ayuda' }, h('code', {}, c.cmd)) : null, h('pre', {}, c.detalle)))
+    }
   }
   if (corrida.cambios?.ficheros) caja.append(h('details', {}, h('summary', {}, `Ficheros que cambió (${corrida.cambios.ficheros.split('\n').length})`), h('pre', {}, corrida.cambios.ficheros), h('pre', { class: 'diff' }, corrida.cambios.diff)))
   if (corrida.fin) caja.append(h('p', { class: 'ayuda' }, `${m.turnos ?? '–'} turnos · ${m.herramientas} herramientas · ${m.segundos ?? '–'} s · ${m.salida ?? '–'} tokens de salida · ${m.coste != null ? `${m.coste.toFixed(2)} $ a precio de API` : ''} · ${corrida.modelo}`))
@@ -2390,13 +2396,20 @@ function filasComparacion(ejemplo) {
     fila('Turnos', (c) => String(c.metricas.turnos ?? '—')),
     fila('Duración', (c) => `${c.metricas.segundos ?? '—'} s`),
   ]
-  ejemplo.comprobaciones.forEach((nombre) => filas.push(fila(nombre, (c) => { const r = c.comprobaciones.find((x) => x.nombre === nombre); return r ? (r.bien ? '✔ sí' : '✘ no') : '—' })))
+  ejemplo.comprobaciones.forEach((nombre) => filas.push(fila(nombre, (c) => { const r = c.comprobaciones.find((x) => x.nombre === nombre); return r ? (r.bien ? 'Sí' : 'No') : '—' })))
   return filas
 }
 function pintarComparacion(caja, ejemplo) {
   const filas = filasComparacion(ejemplo)
   if (!filas) { caja.replaceChildren(h('p', { class: 'ayuda' }, 'Ejecuta las dos columnas para ver la comparación.')); return }
-  caja.innerHTML = `<div class="tabla comparacion"><table><thead><tr><th></th>${ejemplo.variantes.map((v) => `<th>${v.nombre}</th>`).join('')}</tr></thead><tbody>${filas.map(([n, x, y]) => `<tr><th>${n}</th><td class="${x !== y ? 'distinto' : ''}">${x}</td><td class="${x !== y ? 'distinto' : ''}">${y}</td></tr>`).join('')}</tbody></table></div>`
+  // Veredicto: ¿se ve la diferencia que el ejemplo quiere enseñar?
+  const [sin, con] = ejemplo.variantes.map((v) => corridas[`${ejemplo.id}:${v.id}`])
+  const gana = con.comprobaciones.filter((c) => c.bien && !sin.comprobaciones.find((x) => x.nombre === c.nombre)?.bien).length
+  const fallaCon = con.comprobaciones.filter((c) => !c.bien).length
+  const veredicto = gana > 0 && fallaCon === 0 ? ['verde', `Se ve la diferencia: «${ejemplo.variantes[1].nombre}» consigue ${gana} cosa${gana === 1 ? '' : 's'} que «${ejemplo.variantes[0].nombre}» no. Los «No» de la primera columna son el resultado esperado, no un error.`]
+    : gana > 0 ? ['ambar', `Hay diferencia a favor de «${ejemplo.variantes[1].nombre}» (${gana}), pero también se le escapó algo (${fallaCon}). El modelo no es determinista: repite esa columna.`]
+    : ['ambar', 'Esta vez las dos columnas han salido igual en las comprobaciones. Pasa: el modelo no es determinista y a veces deduce solo lo que falta. Compara los registros y las respuestas, o repite la ejecución.']
+  caja.innerHTML = `<p class="veredicto ${veredicto[0]}">${veredicto[1]}</p><div class="tabla comparacion"><table><thead><tr><th></th>${ejemplo.variantes.map((v) => `<th>${v.nombre}</th>`).join('')}</tr></thead><tbody>${filas.map(([n, x, y]) => `<tr><th>${n}</th><td class="${x !== y ? 'distinto' : ''}">${x}</td><td class="${x !== y ? 'distinto' : ''}">${y}</td></tr>`).join('')}</tbody></table></div>`
 }
 
 let enMarcha = 0

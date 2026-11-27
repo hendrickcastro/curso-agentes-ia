@@ -115,6 +115,8 @@ body.editando .rejilla button.quitado::after{content:"Restaurar"}
 .resultado-vivo h4{margin:14px 0 4px; font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--suave)}
 .resultado-vivo pre.respuesta,.resultado-vivo pre.fichero{font-size:13px; border:1px solid var(--linea)}
 .comprobacion summary{cursor:pointer; padding:3px 0}
+.comprobacion summary small{color:var(--suave)}
+.veredicto{padding:10px 14px; border-radius:10px; font-weight:600}
 .sin-claude{border-color:var(--rojo)}
 button:disabled{opacity:.6; cursor:progress}
 @media (max-width:900px){.dos-columnas{grid-template-columns:1fr}}
