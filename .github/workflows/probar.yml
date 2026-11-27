@@ -1,0 +1,36 @@
+# Lanza las pruebas del curso en Windows, macOS y Linux de verdad.
+name: Probar en Windows, macOS y Linux
+on:
+  push:
+    branches: [production]
+  workflow_dispatch:
+jobs:
+  probar:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: El site se genera
+        run: node 04-site/build.mjs
+      - name: El proyecto de ejemplo pasa su red y sus tests
+        working-directory: 06-en-vivo/pokedex
+        run: npm run check
+      - name: Servidor de punta a punta (con un Claude Code simulado)
+        run: npm test
+      - name: run.bash comprueba el entorno
+        shell: bash
+        run: bash run.bash --revisar
+      - name: Instalar el Claude Code de verdad
+        run: npm install -g @anthropic-ai/claude-code
+      - name: El servidor y run.bash encuentran el Claude Code de verdad
+        shell: bash
+        run: |
+          node -e "import('./06-en-vivo/entorno.mjs').then(async (m) => { console.log(m.claude()); const r = await m.revisarEntorno(); for (const p of r.pruebas) console.log(p.ok ? 'ok ' : 'MAL', p.nombre, '·', p.detalle); process.exit(r.pruebas.find((p) => p.id === 'claude').ok ? 0 : 1) })"
+          bash run.bash --revisar | tee revisar.txt
+          grep -q "Claude Code [0-9]" revisar.txt

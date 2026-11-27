@@ -100,7 +100,14 @@ const entreComillas = (c, args) => (c.shell ? args.map((a) => `"${String(a).repl
 export function lanzarClaude(args, opciones = {}) {
   const c = claude()
   if (!c) throw new Error('No encuentro Claude Code en este equipo. Revisa el entorno (arriba, en «En vivo»).')
-  return spawn(c.cmd, entreComillas(c, [...c.pre, ...args]), { shell: c.shell, env: entornoHijo(), stdio: ['ignore', 'pipe', 'pipe'], ...opciones })
+  let prompt = null
+  if (c.shell) { // por cmd.exe el texto del encargo se rompería (comillas, acentos): va por la entrada estándar
+    const i = args.indexOf('-p')
+    if (i >= 0) { prompt = args[i + 1]; args = [...args.slice(0, i + 1), ...args.slice(i + 2)] }
+  }
+  const hijo = spawn(c.cmd, entreComillas(c, [...c.pre, ...args]), { shell: c.shell, env: entornoHijo(), ...opciones, stdio: [prompt === null ? 'ignore' : 'pipe', 'pipe', 'pipe'] })
+  if (prompt !== null) hijo.stdin.end(prompt)
+  return hijo
 }
 
 export function versionClaude() {

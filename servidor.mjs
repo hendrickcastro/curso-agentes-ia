@@ -35,7 +35,8 @@ const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
 // operativo solo le deja escribir dentro de su copia y le corta la red. Así no hay comandos denegados.
 const AISLADO = JSON.stringify({ sandbox: { enabled: true, autoAllowBashIfSandboxed: true, allowUnsandboxedCommands: false } })
 // Donde no hay aislamiento (Windows), solo se permite esta lista y lo demás se deniega (y se ve en pantalla).
-const PERMITIDO = ['npm run *', 'npm test*', 'node tools/*', 'node .claude/*', 'node --test*', 'node --check *', 'git status*', 'git diff*', 'git log*', 'git ls-files*', 'git show*', 'ls*', 'cat *', 'grep *', 'find *', 'mkdir *', 'cp *', 'cd *', 'pwd', 'head *', 'tail *', 'wc *', 'echo *', 'sort*', 'uniq*', 'test *', 'true'].map((c) => `Bash(${c})`)
+const PERMITIDO = ['node *', 'npm run *', 'npm test*', 'git status*', 'git diff*', 'git log*', 'git ls-files*', 'git show*', 'git add *', 'git commit *', 'git branch*', 'git rev-parse*',
+  'ls*', 'cat *', 'grep *', 'rg *', 'find *', 'mkdir *', 'cp *', 'mv *', 'touch *', 'cd *', 'pwd', 'head *', 'tail *', 'wc *', 'echo *', 'printf *', 'sort*', 'uniq*', 'cut *', 'tr *', 'sed *', 'awk *', 'diff *', 'test *', 'true', 'which *', 'date*'].map((c) => `Bash(${c})`)
 
 // El agente que arregla el entorno tiene que poder mirar dónde están las cosas en el equipo.
 const PARA_BUSCAR = ['where *', 'which *', 'command -v *', 'dir *', 'ls*', 'cat *', 'find *', 'grep *', 'echo *', 'test *', 'pwd', 'head *', 'node -v', 'node --version', 'git --version', 'claude --version', 'cygpath *', 'cmd //c where *', 'cmd /c where *'].map((c) => `Bash(${c})`)
@@ -86,6 +87,7 @@ function prepararCopia(ejemplo, variante, id) {
   for (const [ruta, contenido] of Object.entries(variante.escribir ?? {})) { mkdirSync(dirname(join(dir, ruta)), { recursive: true }); writeFileSync(join(dir, ruta), contenido) }
   const git = (...args) => spawnSync('git', args, { cwd: dir, encoding: 'utf8' })
   git('init', '-q', '-b', 'main')
+  git('config', 'core.autocrlf', 'false') // en Windows: que git no cambie los saltos de línea de la copia
   // `ocultar`: ficheros que existen en disco pero no forman parte del repositorio (como la configuración del equipo)
   if (variante.ocultar?.length) writeFileSync(join(dir, '.git/info/exclude'), `${variante.ocultar.join('\n')}\n`)
   git('add', '-A')

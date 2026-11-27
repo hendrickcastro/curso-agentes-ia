@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "node servidor.mjs",
-    "build": "node 04-site/build.mjs"
+    "build": "node 04-site/build.mjs",
+    "test": "node 06-en-vivo/pruebas/probar.mjs"
   }
 }
